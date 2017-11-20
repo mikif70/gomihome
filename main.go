@@ -82,6 +82,7 @@ func msgHandler(resp *Response) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		wg.Done()
 
 	case "heartbeat":
 		log.Printf("%+v", resp)
@@ -137,6 +138,7 @@ func main() {
 	wg.Add(1)
 	sendMessage(pingAddr, "whois")
 
+	wg.Wait()
 	log.Printf("getting ID\n")
 	sendMessage(pingAddr, "get_id_list")
 
