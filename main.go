@@ -128,6 +128,9 @@ func main() {
 	fmt.Printf("...to Addr: %+v\n", pingAddr)
 	sendMessage(pingAddr, "whois")
 
+	fmt.Printf("...to Addr: %+v\n", pingAddr)
+	sendMessage(pingAddr, "report")
+
 	for {
 	}
 }
