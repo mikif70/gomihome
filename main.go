@@ -1,4 +1,4 @@
-package xiaomi
+package main
 
 import (
 	//	"encoding/hex"
