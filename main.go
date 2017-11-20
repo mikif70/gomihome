@@ -39,6 +39,7 @@ var (
 	conn     *net.UDPConn
 	gateways *Gateway
 	wg       sync.WaitGroup
+	whois    = 0
 )
 
 const (
@@ -77,6 +78,7 @@ func connHandler() {
 func msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "iam":
+		whois++
 		log.Printf("IAM: %+v", resp)
 		gateways = &Gateway{
 			Sid: resp.Sid,
@@ -89,13 +91,16 @@ func msgHandler(resp *Response) {
 		gateways.Sid = resp.Sid
 		gateways.Token = resp.Token
 
-		log.Printf("getting ID\n")
-		gateways.sendMessage("get_id_list")
+		if whois <= 1 {
+			log.Printf("getting ID\n")
+			gateways.sendMessage("get_id_list")
+		}
 
 	case "heartbeat":
 		log.Printf("HEARTBEAT: %+v", resp)
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp)
+		log.Printf("Data: %+v\n", resp.Data)
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}
