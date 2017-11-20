@@ -107,6 +107,7 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 	if err != nil {
 		log.Fatal(err)
 	}
+	gateways.Addr = addr
 	conn, err = net.ListenMulticastUDP("udp", nil, addr)
 	if err != nil {
 		log.Panic(err)
@@ -143,13 +144,7 @@ func main() {
 	wg.Wait()
 
 	log.Println("sending whois...")
-	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":"+multicastPort)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("...to Addr: %+v\n", pingAddr)
-
-	sendMessage(pingAddr, "whois")
+	gateways.sendMessage("whois")
 
 	for {
 	}
