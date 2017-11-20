@@ -137,10 +137,9 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("...to Addr: %+v\n", pingAddr)
-	wg.Add(1)
+
 	sendMessage(pingAddr, "whois")
 
-	wg.Wait()
 	log.Printf("getting ID\n")
 	sendMessage(pingAddr, "get_id_list")
 
