@@ -125,5 +125,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("...to Addr: %+v\n", pingAddr)
 	sendMessage(pingAddr, "whois")
+
+	for {
+	}
 }
