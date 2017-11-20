@@ -3,7 +3,6 @@ package main
 import (
 	//	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"sync"
@@ -86,6 +85,8 @@ func msgHandler(resp *Response) {
 
 	case "heartbeat":
 		log.Printf("%+v", resp)
+	default:
+		log.Printf("%+v", resp)
 	}
 }
 
@@ -122,20 +123,21 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 }
 
 func main() {
-	fmt.Println("Starting handler...")
+	log.Println("Starting handler...")
 	go serveMulticastUDP(multicastIp+":"+multicastPort, connHandler, msgHandler)
 
 	wg.Wait()
 
-	fmt.Println("sending whois...")
+	log.Println("sending whois...")
 	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":4321")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("...to Addr: %+v\n", pingAddr)
+	log.Printf("...to Addr: %+v\n", pingAddr)
+	wg.Add(1)
 	sendMessage(pingAddr, "whois")
 
-	fmt.Printf("getting ID\n")
+	log.Printf("getting ID\n")
 	sendMessage(pingAddr, "get_id_list")
 
 	for {
