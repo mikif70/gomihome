@@ -101,20 +101,18 @@ func msgHandler(resp *Response) {
 	}
 }
 
-func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *Response)) {
-	wg.Add(1)
+func serveMulticastUDP(a string) {
 	addr, err := net.ResolveUDPAddr("udp", a)
 	if err != nil {
 		log.Fatal(err)
 	}
-	gateways.Addr = addr
 	conn, err = net.ListenMulticastUDP("udp", nil, addr)
 	if err != nil {
 		log.Panic(err)
 	}
+}
 
-	wg.Done()
-
+func loopReadUdp(conn *net.UDPConn, msgHandler func(resp *Response)) {
 	conn.SetReadBuffer(maxDatagramSize)
 	for {
 		b := make([]byte, maxDatagramSize)
@@ -136,14 +134,21 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 
 func main() {
 
+	var err error
+
 	gateways = &Gateway{}
 
 	log.Println("Starting handler...")
-	go serveMulticastUDP(multicastIp+":"+multicastPort, connHandler, msgHandler)
+	serveMulticastUDP(multicastIp + ":" + multicastPort)
 
-	wg.Wait()
+	go loopReadUdp(conn, msgHandler)
 
-	log.Println("sending whois...")
+	gateways.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":"+multicastPort)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("sending whois to %+v from %+v\n", gateways, conn)
 	gateways.sendMessage("whois")
 
 	for {
