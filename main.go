@@ -135,8 +135,8 @@ func main() {
 	fmt.Printf("...to Addr: %+v\n", pingAddr)
 	sendMessage(pingAddr, "whois")
 
-	fmt.Printf("...to Addr: %+v\n", pingAddr)
-	sendMessage(pingAddr, "report")
+	fmt.Printf("getting ID\n")
+	sendMessage(pingAddr, "get_id_list")
 
 	for {
 	}
