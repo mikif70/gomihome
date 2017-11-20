@@ -82,7 +82,6 @@ func msgHandler(resp *Response) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		wg.Done()
 
 	case "heartbeat":
 		log.Printf("HEARTBEAT: %+v", resp)
