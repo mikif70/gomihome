@@ -77,7 +77,7 @@ func connHandler() {
 func msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "iam":
-		log.Printf("%+v", resp)
+		log.Printf("IAM: %+v", resp)
 		_, err := net.ResolveUDPAddr("udp", resp.IP+":"+multicastPort)
 		if err != nil {
 			log.Fatal(err)
@@ -85,9 +85,11 @@ func msgHandler(resp *Response) {
 		wg.Done()
 
 	case "heartbeat":
-		log.Printf("%+v", resp)
+		log.Printf("HEARTBEAT: %+v", resp)
+	case "get_id_list_ack":
+		log.Printf("Get ACK: %+v\n", resp)
 	default:
-		log.Printf("%+v", resp)
+		log.Printf("DEFAULT: %+v", resp)
 	}
 }
 
