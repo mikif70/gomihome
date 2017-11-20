@@ -143,7 +143,7 @@ func main() {
 
 	go loopReadUdp(conn, msgHandler)
 
-	gateways.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":"+multicastPort)
+	gateways.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":4321") //+multicastPort)
 	if err != nil {
 		log.Fatal(err)
 	}
