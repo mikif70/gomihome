@@ -37,7 +37,7 @@ type (
 
 var (
 	conn     *net.UDPConn
-	gateways map[string]Gateway
+	gateways *Gateway
 	wg       sync.WaitGroup
 )
 
@@ -78,10 +78,19 @@ func msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "iam":
 		log.Printf("IAM: %+v", resp)
-		_, err := net.ResolveUDPAddr("udp", resp.IP+":"+multicastPort)
+		gateways = &Gateway{
+			Sid: resp.Sid,
+		}
+		gwaddr, err := net.ResolveUDPAddr("udp", resp.IP+":"+multicastPort)
 		if err != nil {
 			log.Fatal(err)
 		}
+		gateways.Addr = gwaddr
+		gateways.Sid = resp.Sid
+		gateways.Token = resp.Token
+
+		log.Printf("getting ID\n")
+		gateways.sendMessage("get_id_list")
 
 	case "heartbeat":
 		log.Printf("HEARTBEAT: %+v", resp)
@@ -125,22 +134,22 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 }
 
 func main() {
+
+	gateways = &Gateway{}
+
 	log.Println("Starting handler...")
 	go serveMulticastUDP(multicastIp+":"+multicastPort, connHandler, msgHandler)
 
 	wg.Wait()
 
 	log.Println("sending whois...")
-	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":4321")
+	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":"+multicastPort)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("...to Addr: %+v\n", pingAddr)
 
 	sendMessage(pingAddr, "whois")
-
-	log.Printf("getting ID\n")
-	sendMessage(pingAddr, "get_id_list")
 
 	for {
 	}
