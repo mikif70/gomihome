@@ -3,6 +3,7 @@ package xiaomi
 import (
 	//	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	//	"time"
@@ -116,5 +117,13 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 }
 
 func main() {
-	serveMulticastUDP(multicastIp+":"+multicastPort, connHandler, msgHandler)
+	fmt.Println("Starting handler...")
+	go serveMulticastUDP(multicastIp+":"+multicastPort, connHandler, msgHandler)
+
+	fmt.Println("sending whois...")
+	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":4321")
+	if err != nil {
+		log.Fatal(err)
+	}
+	sendMessage(pingAddr, "whois")
 }
