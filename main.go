@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 	//	"time"
 )
 
@@ -38,6 +39,7 @@ type (
 var (
 	conn     *net.UDPConn
 	gateways map[string]Gateway
+	wg       sync.WaitGroup
 )
 
 const (
@@ -88,6 +90,7 @@ func msgHandler(resp *Response) {
 }
 
 func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *Response)) {
+	wg.Add(1)
 	addr, err := net.ResolveUDPAddr("udp", a)
 	if err != nil {
 		log.Fatal(err)
@@ -96,6 +99,8 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 	if err != nil {
 		log.Panic(err)
 	}
+
+	wg.Done()
 
 	conn.SetReadBuffer(maxDatagramSize)
 	for {
@@ -119,6 +124,8 @@ func serveMulticastUDP(a string, connectedHandler func(), msgHandler func(resp *
 func main() {
 	fmt.Println("Starting handler...")
 	go serveMulticastUDP(multicastIp+":"+multicastPort, connHandler, msgHandler)
+
+	wg.Wait()
 
 	fmt.Println("sending whois...")
 	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":4321")
