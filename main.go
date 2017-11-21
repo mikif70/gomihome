@@ -140,24 +140,25 @@ func msgHandler(resp *Response) {
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
 		var volt string
+		rd := resp.Data.(string)
 		switch resp.Model {
 		case "motion":
 			data := Motion{}
-			err := json.Unmarshal(resp.Data.([]byte), &data)
+			err := json.Unmarshal([]byte(rd), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			volt = data.Voltage
 		case "sensor_ht":
 			data := Sensor_ht{}
-			err := json.Unmarshal(resp.Data.([]byte), &data)
+			err := json.Unmarshal([]byte(rd), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			volt = data.Voltage
 		case "switch":
 			data := Switch{}
-			err := json.Unmarshal(resp.Data.([]byte), &data)
+			err := json.Unmarshal([]byte(rd), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
