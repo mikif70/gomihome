@@ -101,6 +101,9 @@ func msgHandler(resp *Response) {
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp)
 		log.Printf("Data: %+v\n", resp.Data)
+		for i := range resp.Data.([]string) {
+			log.Printf("Data: %+v\n", i)
+		}
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}
