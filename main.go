@@ -103,8 +103,10 @@ func msgHandler(resp *Response) {
 		log.Printf("Get ACK: %+v\n", resp)
 		log.Printf("Data: %+v\n", resp.Data)
 		retval := strings.Split(resp.Data.(string), ",")
+		r := strings.NewReplacer("\"", "", "[", "", "]", "")
 		for i := range retval {
-			log.Printf("Data: %d - %s\n", i, retval[i])
+			ns := r.Replace(retval[i])
+			log.Printf("Data: %d - %s\n", i, ns)
 		}
 	default:
 		log.Printf("DEFAULT: %+v", resp)
