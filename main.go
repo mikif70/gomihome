@@ -12,10 +12,9 @@ import (
 
 type (
 	Response struct {
-		Cmd   string `json:"cmd"`
-		Model string `json:"model"`
-		Sid   string `json:"sid"`
-		//ShortId int `json:"short_id,integer"`
+		Cmd   string      `json:"cmd"`
+		Model string      `json:"model"`
+		Sid   string      `json:"sid"`
 		Token string      `json:"token,omitempty"`
 		IP    string      `json:"ip,omitempty"`
 		Port  string      `json:"port,omitempty"`
@@ -33,6 +32,29 @@ type (
 		Token string
 	}
 
+	Device struct {
+		Model   string
+		Sid     string
+		Name    string
+		Voltage string
+	}
+
+	Motion struct {
+		Voltage string `json:"voltage"`
+		Status  string `json:"status`
+	}
+
+	Switch struct {
+		Voltage string `json:"voltage"`
+		Status  string `json:"status`
+	}
+
+	Sensor_ht struct {
+		Voltage     string `json:"voltage"`
+		Temperature string `json:"temperature"`
+		Humidity    string `json:"humidity"`
+	}
+
 	object map[string]interface{}
 )
 
@@ -41,6 +63,7 @@ var (
 	gateways *Gateway
 	wg       sync.WaitGroup
 	whois    = 0
+	devices  = make(map[string]Device)
 )
 
 const (
@@ -49,10 +72,6 @@ const (
 	//multicastAddr         = "239.255.255.250:9898"
 	maxDatagramSize = 8192
 )
-
-func GetStatus() string { //test
-	return ""
-}
 
 func (this *Gateway) sendMessage(msg string, sid string) {
 	sendMessage(this.Addr, msg, sid)
@@ -118,6 +137,40 @@ func msgHandler(resp *Response) {
 			log.Printf("Data: %d - %s\n", i, ns)
 			gateways.sendMessage("read", ns)
 		}
+	case "read_ack":
+		log.Printf("Read ACK: %+v", resp)
+		var volt string
+		switch resp.Model {
+		case "motion":
+			data := Motion{}
+			err := json.Unmarshal(resp.Data.([]byte), &data)
+			if err != nil {
+				log.Fatal(err)
+			}
+			volt = data.Voltage
+		case "sensor_ht":
+			data := Sensor_ht{}
+			err := json.Unmarshal(resp.Data.([]byte), &data)
+			if err != nil {
+				log.Fatal(err)
+			}
+			volt = data.Voltage
+		case "switch":
+			data := Switch{}
+			err := json.Unmarshal(resp.Data.([]byte), &data)
+			if err != nil {
+				log.Fatal(err)
+			}
+			volt = data.Voltage
+		}
+		if _, ok := devices[resp.Sid]; !ok {
+			devices[resp.Sid] = Device{
+				Sid:     resp.Sid,
+				Model:   resp.Model,
+				Voltage: volt,
+			}
+		}
+		log.Print("Devs: %+v", devices)
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}
