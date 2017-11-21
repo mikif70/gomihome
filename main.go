@@ -54,12 +54,21 @@ func GetStatus() string { //test
 	return ""
 }
 
-func (this *Gateway) sendMessage(msg string) {
-	sendMessage(this.Addr, msg)
+func (this *Gateway) sendMessage(msg string, sid string) {
+	sendMessage(this.Addr, msg, sid)
 }
 
-func sendMessage(addr *net.UDPAddr, msg string) {
-	req, err := json.Marshal(Request{Cmd: msg})
+func sendMessage(addr *net.UDPAddr, msg string, sid string) {
+
+	var req []byte
+	var err error
+
+	if sid != "" {
+		req, err = json.Marshal(Request{Cmd: msg, Sid: sid})
+	} else {
+		req, err = json.Marshal(Request{Cmd: msg})
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,7 +82,7 @@ func connHandler() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	sendMessage(pingAddr, "whois")
+	sendMessage(pingAddr, "whois", "")
 }
 
 func msgHandler(resp *Response) {
@@ -94,7 +103,7 @@ func msgHandler(resp *Response) {
 
 		if whois <= 1 {
 			log.Printf("getting ID\n")
-			gateways.sendMessage("get_id_list")
+			gateways.sendMessage("get_id_list", "")
 		}
 
 	case "heartbeat":
@@ -107,6 +116,7 @@ func msgHandler(resp *Response) {
 		for i := range retval {
 			ns := r.Replace(retval[i])
 			log.Printf("Data: %d - %s\n", i, ns)
+			gateways.sendMessage("read", ns)
 		}
 	default:
 		log.Printf("DEFAULT: %+v", resp)
@@ -161,7 +171,7 @@ func main() {
 	}
 
 	log.Printf("sending whois to %+v from %+v\n", gateways, conn)
-	gateways.sendMessage("whois")
+	gateways.sendMessage("whois", "")
 
 	for {
 	}
