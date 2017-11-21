@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"strings"
 	"sync"
 	//	"time"
 )
@@ -101,7 +102,8 @@ func msgHandler(resp *Response) {
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp)
 		log.Printf("Data: %+v\n", resp.Data)
-		for i := range resp.Data.([]string) {
+		retval := strings.Split(resp.Data.(string), ",")
+		for i := range retval {
 			log.Printf("Data: %+v\n", i)
 		}
 	default:
