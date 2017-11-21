@@ -36,21 +36,21 @@ type (
 		Model   string
 		Sid     string
 		Name    string
-		Voltage string
+		Voltage int
 	}
 
 	Motion struct {
-		Voltage string `json:"voltage"`
+		Voltage int    `json:"voltage"`
 		Status  string `json:"status`
 	}
 
 	Switch struct {
-		Voltage string `json:"voltage"`
+		Voltage int    `json:"voltage"`
 		Status  string `json:"status`
 	}
 
 	Sensor_ht struct {
-		Voltage     string `json:"voltage"`
+		Voltage     int    `json:"voltage"`
 		Temperature string `json:"temperature"`
 		Humidity    string `json:"humidity"`
 	}
@@ -139,7 +139,7 @@ func msgHandler(resp *Response) {
 		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
-		var volt string
+		var volt int
 		rd := resp.Data.(string)
 		switch resp.Model {
 		case "motion":
