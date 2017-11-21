@@ -44,6 +44,11 @@ type (
 		Status  string `json:"status`
 	}
 
+	Magnet struct {
+		Voltage int    `json:"voltage"`
+		Status  string `json:"status`
+	}
+
 	Switch struct {
 		Voltage int    `json:"voltage"`
 		Status  string `json:"status"`
@@ -163,6 +168,13 @@ func msgHandler(resp *Response) {
 				log.Fatal(err)
 			}
 			volt = data.Voltage
+		case "magnet":
+			data := Magnet{}
+			err := json.Unmarshal([]byte(rd), &data)
+			if err != nil {
+				log.Fatal(err)
+			}
+			volt = data.Voltage
 		}
 		if _, ok := devices[resp.Sid]; !ok {
 			devices[resp.Sid] = Device{
@@ -230,7 +242,13 @@ func main() {
 	for {
 		if len(devices) != 0 {
 			for k, v := range devices {
-				log.Printf("k: %s - v: %s", k, v)
+				switch v.Model {
+				case "sensor_ht":
+					log.Printf("k: %s - v: %+v", k, v)
+				case "motion":
+				case "magnet":
+				case "switch":
+				}
 			}
 		}
 		time.Sleep(time.Minute * 1)
