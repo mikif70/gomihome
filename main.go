@@ -7,7 +7,7 @@ import (
 	"net"
 	"strings"
 	"sync"
-	//	"time"
+	"time"
 )
 
 type (
@@ -46,7 +46,7 @@ type (
 
 	Switch struct {
 		Voltage int    `json:"voltage"`
-		Status  string `json:"status`
+		Status  string `json:"status"`
 	}
 
 	Sensor_ht struct {
@@ -228,5 +228,11 @@ func main() {
 	gateways.sendMessage("whois", "")
 
 	for {
+		if len(devices) != 0 {
+			for k, v := range devices {
+				log.Printf("k: %s - v: %s", k, v)
+			}
+		}
+		time.Sleep(time.Minute * 1)
 	}
 }
