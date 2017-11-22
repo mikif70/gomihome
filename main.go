@@ -1,10 +1,11 @@
 package main
 
 import (
-	//	"encoding/hex"
 	"encoding/json"
+	"io"
 	"log"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -145,32 +146,31 @@ func msgHandler(resp *Response) {
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
 		var volt int
-		rd := resp.Data.(string)
 		switch resp.Model {
 		case "motion":
 			data := Motion{}
-			err := json.Unmarshal([]byte(rd), &data)
+			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			volt = data.Voltage
 		case "sensor_ht":
 			data := Sensor_ht{}
-			err := json.Unmarshal([]byte(rd), &data)
+			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			volt = data.Voltage
 		case "switch":
 			data := Switch{}
-			err := json.Unmarshal([]byte(rd), &data)
+			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			volt = data.Voltage
 		case "magnet":
 			data := Magnet{}
-			err := json.Unmarshal([]byte(rd), &data)
+			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -183,7 +183,7 @@ func msgHandler(resp *Response) {
 				Voltage: volt,
 			}
 		}
-		log.Print("Devs: %+v", devices)
+
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}
@@ -223,6 +223,16 @@ func loopReadUdp(conn *net.UDPConn, msgHandler func(resp *Response)) {
 func main() {
 
 	var err error
+
+	f, err := os.OpenFile("xiaomi.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+
+	mw := io.MultiWriter(os.Stdout, f)
+
+	log.SetOutput(mw)
 
 	gateways = &Gateway{}
 
