@@ -155,6 +155,7 @@ func msgHandler(resp *Response) {
 			if err != nil {
 				log.Fatal(err)
 			}
+			updateDevice(resp.Sid, resp.Model, data)
 		case "sensor_ht":
 			data := Sensor_ht{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
@@ -168,12 +169,14 @@ func msgHandler(resp *Response) {
 			if err != nil {
 				log.Fatal(err)
 			}
+			updateDevice(resp.Sid, resp.Model, data)
 		case "magnet":
 			data := Magnet{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
+			updateDevice(resp.Sid, resp.Model, data)
 		}
 
 	default:
