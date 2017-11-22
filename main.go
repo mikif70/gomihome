@@ -34,10 +34,13 @@ type (
 	}
 
 	Device struct {
-		Model   string
-		Sid     string
-		Name    string
-		Voltage int
+		Model       string
+		Sid         string
+		Name        string
+		Voltage     int
+		Status      string
+		Temperature string
+		Humidity    string
 	}
 
 	Motion struct {
@@ -69,7 +72,7 @@ var (
 	gateways *Gateway
 	wg       sync.WaitGroup
 	whois    = 0
-	devices  = make(map[string]Device)
+	devices  = make(map[string]*Device)
 )
 
 const (
@@ -145,7 +148,6 @@ func msgHandler(resp *Response) {
 		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
-		var volt int
 		switch resp.Model {
 		case "motion":
 			data := Motion{}
@@ -153,39 +155,44 @@ func msgHandler(resp *Response) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			volt = data.Voltage
 		case "sensor_ht":
 			data := Sensor_ht{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
-			volt = data.Voltage
+			updateDevice(resp.Sid, resp.Model, data)
 		case "switch":
 			data := Switch{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
-			volt = data.Voltage
 		case "magnet":
 			data := Magnet{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
-			volt = data.Voltage
-		}
-		if _, ok := devices[resp.Sid]; !ok {
-			devices[resp.Sid] = Device{
-				Sid:     resp.Sid,
-				Model:   resp.Model,
-				Voltage: volt,
-			}
 		}
 
 	default:
 		log.Printf("DEFAULT: %+v", resp)
+	}
+}
+
+func updateDevice(sid string, model string, data interface{}) {
+	if _, ok := devices[sid]; !ok {
+		devices[sid] = &Device{
+			Sid:   sid,
+			Model: model,
+		}
+	}
+	switch model {
+	case "sensor_ht":
+		devices[sid].Voltage = data.(Sensor_ht).Voltage
+		devices[sid].Temperature = data.(Sensor_ht).Temperature
+		devices[sid].Humidity = data.(Sensor_ht).Humidity
 	}
 }
 
