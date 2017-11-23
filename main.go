@@ -33,32 +33,66 @@ type (
 		Token string
 	}
 
+	/*
+		Gateway:
+			rgb:
+				<int>
+			illumination:
+				<int>
+
+
+		Switch:
+			status:
+				"click"
+				"double_click"
+				"long_click_press"
+				"long_click_release"
+
+		Motion:
+			status:
+				"motion"
+			no_motion:
+				<sec>
+
+		Sensor_ht:
+			voltage:
+				<int>
+			temperature:
+				<int>
+			humidity:
+				<int>
+
+	*/
+
 	Device struct {
-		Model       string
-		Sid         string
-		Name        string
-		Voltage     int
-		Status      string
-		Temperature string
-		Humidity    string
+		Model        string
+		Sid          string
+		Name         string
+		Voltage      int
+		Status       string
+		Temperature  string
+		Humidity     string
+		Illumination int
+		Nomotion     int
+		Rgb          int
 	}
 
-	Motion struct {
+	MotionData struct {
 		Voltage int    `json:"voltage"`
 		Status  string `json:"status`
 	}
 
-	Magnet struct {
+	MagnetData struct {
 		Voltage int    `json:"voltage"`
 		Status  string `json:"status`
 	}
 
-	Switch struct {
+	SwitchData struct {
 		Voltage int    `json:"voltage"`
 		Status  string `json:"status"`
 	}
 
-	Sensor_ht struct {
+	Sensor_htData struct {
 		Voltage     int    `json:"voltage"`
 		Temperature string `json:"temperature"`
 		Humidity    string `json:"humidity"`
@@ -150,28 +184,28 @@ func msgHandler(resp *Response) {
 		log.Printf("Read ACK: %+v", resp)
 		switch resp.Model {
 		case "motion":
-			data := Motion{}
+			data := MotionData{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			updateDevice(resp.Sid, resp.Model, data)
 		case "sensor_ht":
-			data := Sensor_ht{}
+			data := Sensor_htData{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			updateDevice(resp.Sid, resp.Model, data)
 		case "switch":
-			data := Switch{}
+			data := SwitchData{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
 			}
 			updateDevice(resp.Sid, resp.Model, data)
 		case "magnet":
-			data := Magnet{}
+			data := MagnetData{}
 			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
 			if err != nil {
 				log.Fatal(err)
@@ -193,9 +227,11 @@ func updateDevice(sid string, model string, data interface{}) {
 	}
 	switch model {
 	case "sensor_ht":
-		devices[sid].Voltage = data.(Sensor_ht).Voltage
-		devices[sid].Temperature = data.(Sensor_ht).Temperature
-		devices[sid].Humidity = data.(Sensor_ht).Humidity
+		log.Printf("Before Update: %+v", devices[sid])
+		devices[sid].Voltage = data.(Sensor_htData).Voltage
+		devices[sid].Temperature = data.(Sensor_htData).Temperature
+		devices[sid].Humidity = data.(Sensor_htData).Humidity
+		log.Printf("After Update: %+v", devices[sid])
 	}
 }
 
@@ -218,8 +254,6 @@ func loopReadUdp(conn *net.UDPConn, msgHandler func(resp *Response)) {
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
-		//log.Println(n, "bytes read from", src)
-		//log.Println(string(b[:n]))
 
 		resp := Response{}
 		err = json.Unmarshal(b[:n], &resp)
