@@ -77,6 +77,12 @@ type (
 		Rgb          int
 	}
 
+	GatewayData struct {
+		Ip           string `json:"ip"`
+		Rgb          int    `json:"rgb"`
+		Illumination int    `json:"illumination"`
+	}
+
 	MotionData struct {
 		Voltage int    `json:"voltage"`
 		Status  string `json:"status`
@@ -170,6 +176,7 @@ func msgHandler(resp *Response) {
 
 	case "heartbeat":
 		log.Printf("HEARTBEAT: %+v", resp)
+		updateDevice(resp.Sid, resp.Model, resp.Data)
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp)
 		log.Printf("Data: %+v\n", resp.Data)
@@ -182,40 +189,34 @@ func msgHandler(resp *Response) {
 		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
-		switch resp.Model {
-		case "motion":
-			data := MotionData{}
-			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
-			if err != nil {
-				log.Fatal(err)
-			}
-			updateDevice(resp.Sid, resp.Model, data)
-		case "sensor_ht":
-			data := Sensor_htData{}
-			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
-			if err != nil {
-				log.Fatal(err)
-			}
-			updateDevice(resp.Sid, resp.Model, data)
-		case "switch":
-			data := SwitchData{}
-			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
-			if err != nil {
-				log.Fatal(err)
-			}
-			updateDevice(resp.Sid, resp.Model, data)
-		case "magnet":
-			data := MagnetData{}
-			err := json.Unmarshal([]byte(resp.Data.(string)), &data)
-			if err != nil {
-				log.Fatal(err)
-			}
-			updateDevice(resp.Sid, resp.Model, data)
-		}
+		updateDevice(resp.Sid, resp.Model, resp.Data)
 
 	default:
 		log.Printf("DEFAULT: %+v", resp)
+		updateDevice(resp.Sid, resp.Model, resp.Data)
 	}
+}
+
+func dataToJson(model string, data interface{}) interface{} {
+	var retval interface{}
+	switch model {
+	case "motion":
+		retval = MotionData{}
+	case "sensor_ht":
+		retval = Sensor_htData{}
+	case "switch":
+		retval = SwitchData{}
+	case "magnet":
+		retval = MagnetData{}
+	case "gateway":
+		retval = GatewayData{}
+	}
+	err := json.Unmarshal([]byte(data.(string)), &retval)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return retval
 }
 
 func updateDevice(sid string, model string, data interface{}) {
@@ -225,12 +226,13 @@ func updateDevice(sid string, model string, data interface{}) {
 			Model: model,
 		}
 	}
+	val := dataToJson(model, data)
 	switch model {
 	case "sensor_ht":
 		log.Printf("Before Update: %+v", devices[sid])
-		devices[sid].Voltage = data.(Sensor_htData).Voltage
-		devices[sid].Temperature = data.(Sensor_htData).Temperature
-		devices[sid].Humidity = data.(Sensor_htData).Humidity
+		devices[sid].Voltage = val.(Sensor_htData).Voltage
+		devices[sid].Temperature = val.(Sensor_htData).Temperature
+		devices[sid].Humidity = val.(Sensor_htData).Humidity
 		log.Printf("After Update: %+v", devices[sid])
 	}
 }
