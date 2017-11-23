@@ -126,7 +126,6 @@ func serveMulticast(a string) {
 	go loopReadMulticast(conn, msgHandler)
 	log.Printf("sending whois to %+v from %+v\n", addr, conn)
 	sendMessage(addr, "whois", "")
-
 }
 
 func loopReadMulticast(conn *net.UDPConn, msgHandler func(resp *Response)) {
@@ -138,6 +137,8 @@ func loopReadMulticast(conn *net.UDPConn, msgHandler func(resp *Response)) {
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
+
+		log.Printf("read resp: %+v - size: %d", b, n)
 
 		resp := Response{}
 		err = json.Unmarshal(b[:n], &resp)
