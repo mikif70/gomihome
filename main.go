@@ -199,6 +199,7 @@ func msgHandler(resp *Response) {
 }
 
 func dataToJson(model string, data interface{}) interface{} {
+	log.Printf("Data: %+v - type %+v", data, reflect.TypeOf(data))
 	var retval interface{}
 	switch model {
 	case "motion":
