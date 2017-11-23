@@ -65,19 +65,6 @@ type (
 
 	*/
 
-	Device struct {
-		Model        string
-		Sid          string
-		Name         string
-		Voltage      int
-		Status       string
-		Temperature  string
-		Humidity     string
-		Illumination int
-		Nomotion     int
-		Rgb          int
-	}
-
 	GatewayData struct {
 		Ip           string `json:"ip"`
 		Rgb          int    `json:"rgb"`
@@ -113,7 +100,7 @@ var (
 	gateways *Gateway
 	wg       sync.WaitGroup
 	whois    = 0
-	devices  = make(map[string]map[string]interface{})
+	devices  = make(map[string]object)
 )
 
 const (
@@ -224,9 +211,9 @@ func dataToJson(model string, data interface{}) interface{} {
 
 func updateDevice(sid string, model string, data interface{}) {
 	if _, ok := devices[sid]; !ok {
-		devices[sid] = map[string]interface{}{
-			"Sid":   sid,
-			"Model": model,
+		devices[sid] = object{
+			"sid":   sid,
+			"sodel": model,
 		}
 	}
 	val := dataToJson(model, data)
