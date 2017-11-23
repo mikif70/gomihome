@@ -138,12 +138,11 @@ func loopReadMulticast(conn *net.UDPConn, msgHandler func(resp *Response)) {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
 
-		log.Printf("read resp: %+v - size: %d", b, n)
-
 		resp := Response{}
 		err = json.Unmarshal(b[:n], &resp)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("JSON Err: %+v", err)
+			continue
 		}
 		msgHandler(&resp)
 	}
