@@ -1,4 +1,5 @@
-package main
+package main /*
+package oldmain
 
 import (
 	"encoding/json"
@@ -30,6 +31,7 @@ type (
 
 	Gateway struct {
 		Addr  *net.UDPAddr
+		MAddr *net.UDPAddr
 		Ip    string
 		Port  string
 		Sid   string
@@ -65,8 +67,9 @@ type (
 			humidity:
 				<int>
 
-	*/
+*/
 
+/*
 	GatewayData struct {
 		Ip           string `json:"ip"`
 		Port         string `json:"port"`
@@ -99,12 +102,12 @@ type (
 )
 
 var (
-	conn     *net.UDPConn
-	mconn    *net.UDPConn
-	gateways *Gateway
-	wg       sync.WaitGroup
-	whois    = 0
-	devices  = make(map[string]object)
+	conn    *net.UDPConn
+	mconn   *net.UDPConn
+	wg      sync.WaitGroup
+	gateway = Gateway{}
+	whois   = 0
+	devices = make(map[string]object)
 )
 
 const (
@@ -133,8 +136,8 @@ func sendMessage(addr *net.UDPAddr, msg string, sid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(string(req))
-	log.Println(addr)
+	log.Printf("Msg: %+v", string(req))
+	log.Printf("Addr: %+v", addr)
 	conn.WriteMsgUDP([]byte(req), nil, addr)
 }
 
@@ -148,27 +151,27 @@ func connHandler() {
 }
 */
 
+/*
 func msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "iam":
 		whois++
 		log.Printf("IAM: %+v", resp)
-		gateways = &Gateway{
-			Sid: resp.Sid,
-		}
+		gateway.Sid = resp.Sid
 		gwaddr, err := net.ResolveUDPAddr("udp", resp.IP+":"+resp.Port)
 		if err != nil {
 			log.Fatal(err)
 		}
-		gateways.Addr = gwaddr
-		gateways.Sid = resp.Sid
-		gateways.Token = resp.Token
-		gateways.Ip = resp.IP
-		gateways.Port = resp.Port
+		gateway.Addr = gwaddr
+		gateway.Sid = resp.Sid
+		gateway.Token = resp.Token
+		gateway.Ip = resp.IP
+		gateway.Port = resp.Port
+		wg.Done()
 
 		if whois <= 1 {
 			log.Printf("getting ID\n")
-			gateways.sendMessage("get_id_list", "")
+			gateway.sendMessage("get_id_list", "")
 		}
 
 	case "heartbeat":
@@ -182,7 +185,7 @@ func msgHandler(resp *Response) {
 		for i := range retval {
 			ns := r.Replace(retval[i])
 			log.Printf("Data: %d - %s\n", i, ns)
-			gateways.sendMessage("read", ns)
+			gateway.sendMessage("read", ns)
 		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
@@ -243,7 +246,8 @@ func updateDevice(sid string, model string, data interface{}) {
 			devices[sid].Humidity = val.(Sensor_htData).Humidity
 			log.Printf("After Update: %+v", devices[sid])
 		}
-	*/
+*/
+/*
 }
 
 func serveUDP(a string) {
@@ -258,18 +262,27 @@ func serveUDP(a string) {
 }
 
 func serveMulticastUDP(a string) {
-	addr, err := net.ResolveUDPAddr("udp", a)
+	var err error
+
+	log.Printf("GW: %+v", gateway)
+
+	gateway.MAddr, err = net.ResolveUDPAddr("udp", a)
 	if err != nil {
 		log.Fatal(err)
 	}
-	mconn, err = net.ListenMulticastUDP("udp", nil, addr)
+	wg.Add(1)
+	mconn, err = net.ListenMulticastUDP("udp", nil, gateway.MAddr)
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
 func loopReadMulticast(mconn *net.UDPConn, msgHandler func(resp *Response)) {
-	conn.SetReadBuffer(maxDatagramSize)
+	mconn.SetReadBuffer(maxDatagramSize)
+
+	log.Printf("sending whois to %+v from %+v\n", gateway, mconn)
+	sendMessage(gateway.MAddr, "whois", "")
+
 	for {
 		b := make([]byte, maxDatagramSize)
 		n, _, err := conn.ReadFromUDP(b)
@@ -313,32 +326,28 @@ func main() {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
-
 	mw := io.MultiWriter(os.Stdout, f)
-
 	log.SetOutput(mw)
-
-	gateways = &Gateway{}
 
 	log.Println("Starting handler...")
 	serveMulticastUDP(multicastIp + ":" + multicastPort)
-	serveUDP(gatewayIp + ":" + gatewayPort)
-
-	go loopReadUdp(conn, msgHandler)
 	go loopReadMulticast(mconn, msgHandler)
 
-	gateways.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":4321") //+multicastPort)
-	if err != nil {
-		log.Fatal(err)
-	}
+	wg.Wait()
+	/*
+		gateways.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":"+multicastPort) //+multicastPort)
+		if err != nil {
+			log.Fatal(err)
+		}
+*/
 
-	log.Printf("sending whois to %+v from %+v\n", gateways, conn)
-	gateways.sendMessage("whois", "")
+/*
+	go loopReadUdp(conn, msgHandler)
 
 	for {
 		if len(devices) != 0 {
 			for k, v := range devices {
-				gateways.sendMessage("read", v["sid"].(string))
+				gateway.sendMessage("read", v["sid"].(string))
 				switch v["model"] {
 				case "sensor_ht":
 					log.Printf("k: %s - v: %+v", k, v)
@@ -351,3 +360,4 @@ func main() {
 		time.Sleep(time.Minute * 5)
 	}
 }
+*/
