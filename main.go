@@ -312,6 +312,7 @@ func main() {
 	for {
 		if len(devices) != 0 {
 			for k, v := range devices {
+				gateways.sendMessage("read", v["sid"].(string))
 				switch v["model"] {
 				case "sensor_ht":
 					log.Printf("k: %s - v: %+v", k, v)
