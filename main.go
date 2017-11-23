@@ -97,6 +97,7 @@ type (
 
 var (
 	conn     *net.UDPConn
+	mconn    *net.UDPConn
 	gateways *Gateway
 	wg       sync.WaitGroup
 	whois    = 0
@@ -237,15 +238,43 @@ func updateDevice(sid string, model string, data interface{}) {
 	*/
 }
 
+func serveUDP(a string) {
+	addr, err := net.ResolveUDPAddr("udp", a)
+	if err != nil {
+		log.Fatal(err)
+	}
+	conn, err = net.ListenUDP("udp", addr)
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 func serveMulticastUDP(a string) {
 	addr, err := net.ResolveUDPAddr("udp", a)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//	conn, err = net.ListenMulticastUDP("udp", nil, addr)
-	conn, err = net.ListenUDP("udp", addr)
+	mconn, err = net.ListenMulticastUDP("udp", nil, addr)
 	if err != nil {
 		log.Panic(err)
+	}
+}
+
+func loopReadMulticast(mconn *net.UDPConn, msgHandler func(resp *Response)) {
+	conn.SetReadBuffer(maxDatagramSize)
+	for {
+		b := make([]byte, maxDatagramSize)
+		n, _, err := conn.ReadFromUDP(b)
+		if err != nil {
+			log.Fatal("ReadFromUDP failed:", err)
+		}
+
+		resp := Response{}
+		err = json.Unmarshal(b[:n], &resp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		msgHandler(&resp)
 	}
 }
 
@@ -287,6 +316,7 @@ func main() {
 	serveMulticastUDP(multicastIp + ":" + multicastPort)
 
 	go loopReadUdp(conn, msgHandler)
+	go loopReadMulticast(mconn, msgHandler)
 
 	gateways.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":4321") //+multicastPort)
 	if err != nil {
