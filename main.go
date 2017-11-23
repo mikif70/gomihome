@@ -110,9 +110,9 @@ var (
 )
 
 const (
-	multicastIp   = "224.0.0.50"
-	multicastPort = "9898"
-	//multicastAddr         = "239.255.255.250:9898"
+	multicastIp     = "224.0.0.50"
+	gatewayIp       = "192.168.1.150"
+	multicastPort   = "9898"
 	maxDatagramSize = 8192
 )
 
@@ -240,7 +240,8 @@ func serveMulticastUDP(a string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn, err = net.ListenMulticastUDP("udp", nil, addr)
+	//	conn, err = net.ListenMulticastUDP("udp", nil, addr)
+	conn, err = net.ListenUDP("udp", addr)
 	if err != nil {
 		log.Panic(err)
 	}
