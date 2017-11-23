@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -216,6 +217,7 @@ func dataToJson(model string, data interface{}) interface{} {
 		log.Fatal(err)
 	}
 
+	log.Printf("Json: %+v - type %+v", retval, reflect.TypeOf(retval))
 	return retval
 }
 
