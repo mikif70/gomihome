@@ -30,6 +30,8 @@ type (
 
 	Gateway struct {
 		Addr  *net.UDPAddr
+		Ip    string
+		Port  string
 		Sid   string
 		Token string
 	}
@@ -67,8 +69,9 @@ type (
 
 	GatewayData struct {
 		Ip           string `json:"ip"`
-		Rgb          int    `json:"rgb"`
-		Illumination int    `json:"illumination"`
+		Port         string `json:"port"`
+		Rgb          int    `json:"rgb,omitempty"`
+		Illumination int    `json:"illumination,omitempty"`
 	}
 
 	MotionData struct {
@@ -106,13 +109,14 @@ var (
 
 const (
 	multicastIp     = "224.0.0.50"
+	multicastPort   = "4321"
 	gatewayIp       = "192.168.1.150"
-	multicastPort   = "9898"
-	maxDatagramSize = 8192
+	gatewayPort     = "9898"
+	maxDatagramSize = 1024
 )
 
-func (this *Gateway) sendMessage(msg string, sid string) {
-	sendMessage(this.Addr, msg, sid)
+func (gw *Gateway) sendMessage(msg string, sid string) {
+	sendMessage(gw.Addr, msg, sid)
 }
 
 func sendMessage(addr *net.UDPAddr, msg string, sid string) {
@@ -134,6 +138,7 @@ func sendMessage(addr *net.UDPAddr, msg string, sid string) {
 	conn.WriteMsgUDP([]byte(req), nil, addr)
 }
 
+/*
 func connHandler() {
 	pingAddr, err := net.ResolveUDPAddr("udp", multicastIp+":4321")
 	if err != nil {
@@ -141,6 +146,7 @@ func connHandler() {
 	}
 	sendMessage(pingAddr, "whois", "")
 }
+*/
 
 func msgHandler(resp *Response) {
 	switch resp.Cmd {
@@ -150,13 +156,15 @@ func msgHandler(resp *Response) {
 		gateways = &Gateway{
 			Sid: resp.Sid,
 		}
-		gwaddr, err := net.ResolveUDPAddr("udp", resp.IP+":"+multicastPort)
+		gwaddr, err := net.ResolveUDPAddr("udp", resp.IP+":"+resp.Port)
 		if err != nil {
 			log.Fatal(err)
 		}
 		gateways.Addr = gwaddr
 		gateways.Sid = resp.Sid
 		gateways.Token = resp.Token
+		gateways.Ip = resp.IP
+		gateways.Port = resp.Port
 
 		if whois <= 1 {
 			log.Printf("getting ID\n")
@@ -314,6 +322,7 @@ func main() {
 
 	log.Println("Starting handler...")
 	serveMulticastUDP(multicastIp + ":" + multicastPort)
+	serveUDP(gatewayIp + ":" + gatewayPort)
 
 	go loopReadUdp(conn, msgHandler)
 	go loopReadMulticast(mconn, msgHandler)
