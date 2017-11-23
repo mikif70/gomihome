@@ -230,14 +230,22 @@ func updateDevice(sid string, model string, data interface{}) {
 		}
 	}
 	val := dataToJson(model, data)
-	switch model {
-	case "sensor_ht":
-		log.Printf("Before Update: %+v", devices[sid])
-		devices[sid].Voltage = val.(Sensor_htData).Voltage
-		devices[sid].Temperature = val.(Sensor_htData).Temperature
-		devices[sid].Humidity = val.(Sensor_htData).Humidity
-		log.Printf("After Update: %+v", devices[sid])
+	log.Printf("Before Update: %+v", devices[sid])
+	for k, v := range val.(map[string]interface{}) {
+		log.Printf("k: %+v - v: %+v", k, v)
 	}
+	log.Printf("After Update: %+v", devices[sid])
+
+	/*
+		switch model {
+		case "sensor_ht":
+			log.Printf("Before Update: %+v", devices[sid])
+			devices[sid].Voltage = val.(Sensor_htData).Voltage
+			devices[sid].Temperature = val.(Sensor_htData).Temperature
+			devices[sid].Humidity = val.(Sensor_htData).Humidity
+			log.Printf("After Update: %+v", devices[sid])
+		}
+	*/
 }
 
 func serveMulticastUDP(a string) {
