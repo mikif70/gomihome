@@ -113,7 +113,7 @@ var (
 	gateways *Gateway
 	wg       sync.WaitGroup
 	whois    = 0
-	devices  = make(map[string]*Device)
+	devices  = make(map[string]map[string]interface{})
 )
 
 const (
@@ -224,15 +224,17 @@ func dataToJson(model string, data interface{}) interface{} {
 
 func updateDevice(sid string, model string, data interface{}) {
 	if _, ok := devices[sid]; !ok {
-		devices[sid] = &Device{
-			Sid:   sid,
-			Model: model,
+		devices[sid] = map[string]interface{}{
+			"Sid":   sid,
+			"Model": model,
 		}
 	}
 	val := dataToJson(model, data)
-	log.Printf("Before Update: %+v", devices[sid])
+	dv := devices[sid]
+	log.Printf("Before Update: %+v", dv)
 	for k, v := range val.(map[string]interface{}) {
 		log.Printf("k: %+v - v: %+v", k, v)
+		dv[k] = v
 	}
 	log.Printf("After Update: %+v", devices[sid])
 
@@ -310,7 +312,7 @@ func main() {
 	for {
 		if len(devices) != 0 {
 			for k, v := range devices {
-				switch v.Model {
+				switch v["model"] {
 				case "sensor_ht":
 					log.Printf("k: %s - v: %+v", k, v)
 				case "motion":
