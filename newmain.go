@@ -33,13 +33,13 @@
 package main
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"io"
 	"log"
 	"net"
 	"os"
 	//	"strings"
-	//	"sync"
+	"sync"
 	//	"time"
 )
 
@@ -86,82 +86,12 @@ type Sensor_htData struct {
 	Humidity    string `json:"humidity"`
 }
 
-const (
-	multicastIp     = "224.0.0.50"
-	multicastPort   = "4321"
-	maxDatagramSize = 1024
-)
-
 var (
-	conn *net.UDPConn
+	udp     bool
+	conn    *net.UDPConn
+	gateway *Gateway
+	wg      sync.WaitGroup
 )
-
-func sendMessage(addr *net.UDPAddr, msg string, sid string) {
-
-	var req []byte
-	var err error
-
-	if sid != "" {
-		req, err = json.Marshal(Request{Cmd: msg, Sid: sid})
-	} else {
-		req, err = json.Marshal(Request{Cmd: msg})
-	}
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), addr)
-	conn.WriteMsgUDP([]byte(req), nil, addr)
-}
-
-func serveMulticast(a string) {
-	addr, err := net.ResolveUDPAddr("udp", a)
-	if err != nil {
-		log.Fatal(err)
-	}
-	conn, err = net.ListenMulticastUDP("udp", nil, addr)
-	if err != nil {
-		log.Panic(err)
-	}
-	go loopReadMulticast(conn, msgHandler)
-	log.Printf("sending whois to %+v from %+v\n", addr, conn)
-	sendMessage(addr, "whois", "")
-}
-
-func loopReadMulticast(conn *net.UDPConn, msgHandler func(resp *Response)) {
-	conn.SetReadBuffer(maxDatagramSize)
-
-	for {
-		b := make([]byte, maxDatagramSize)
-		n, _, err := conn.ReadFromUDP(b)
-		if err != nil {
-			log.Fatal("ReadFromUDP failed:", err)
-		}
-
-		resp := Response{}
-		err = json.Unmarshal(b[:n], &resp)
-		if err != nil {
-			log.Printf("JSON Err: %+v", err)
-			continue
-		}
-		msgHandler(&resp)
-	}
-}
-
-func msgHandler(resp *Response) {
-	switch resp.Cmd {
-	case "iam":
-		log.Printf("IAM: %+v", resp)
-	case "heartbeat":
-		log.Printf("HEARTBEAT: %+v", resp)
-	case "get_id_list_ack":
-		log.Printf("Get ACK: %+v\n", resp)
-	case "read_ack":
-		log.Printf("Read ACK: %+v", resp)
-	default:
-		log.Printf("DEFAULT: %+v", resp)
-	}
-}
 
 func main() {
 	f, err := os.OpenFile("xiaomi.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -171,10 +101,20 @@ func main() {
 	defer f.Close()
 	mw := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(mw)
+
 	log.Println("Starting handler...")
 
-	serveMulticast(multicastIp + ":" + multicastPort)
+	gateway = &Gateway{}
 
-	for {
-	}
+	multicast = true
+	wg.Add(1)
+	serveMulticast(multicastIp + ":" + multicastPort)
+	wg.Wait()
+	log.Printf("Gateway: %+v", gateway)
+
+	udp = true
+	wg.Add(1)
+	gateway.serveUDP()
+	gateway.discoverDevs()
+	wg.Wait()
 }
