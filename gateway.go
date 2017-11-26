@@ -19,38 +19,41 @@ type Gateway struct {
 func (gw *Gateway) serveUDP() {
 	var err error
 
-	gw.Addr, err = net.ResolveUDPAddr("udp", multicastIp+":"+gw.Port)
+	gw.Addr, err = net.ResolveUDPAddr("udp", gw.IP+":"+gw.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn, err = net.ListenMulticastUDP("udp", nil, gw.Addr)
+	conn, err = net.DialUDP("udp", nil, gw.Addr)
 	if err != nil {
 		log.Panic(err)
 	}
 	gw.Conn = conn
 	gw.Running = true
-	go gw.loopReadUDP(gw.msgHandler)
 }
 
-func (gw *Gateway) loopReadUDP(msgHandler func(resp *Response)) {
+func (gw *Gateway) readUDP() (resp *Response, err error) {
+
+	log.Printf("Reading UDP: %+v", gw.Addr)
+
 	conn.SetReadBuffer(maxDatagramSize)
 
-	for gw.Running {
-		b := make([]byte, maxDatagramSize)
-		n, _, err := gw.Conn.ReadFromUDP(b)
-		if err != nil {
-			log.Fatal("ReadFromUDP failed:", err)
-		}
-
-		resp := Response{}
-		err = json.Unmarshal(b[:n], &resp)
-		if err != nil {
-			log.Printf("JSON Err: %+v", err)
-			continue
-		}
-		msgHandler(&resp)
+	b := make([]byte, maxDatagramSize)
+	n, err := gw.Conn.Read(b)
+	if err != nil {
+		log.Fatal("ReadFromUDP failed:", err)
 	}
-	wg.Done()
+
+	log.Printf("Read from UDP: %d bytes", n)
+
+	resp = &Response{}
+	err = json.Unmarshal(b[:n], &resp)
+	if err != nil {
+		log.Printf("JSON Err: %+v", err)
+		return nil, err
+	}
+
+	return resp, nil
+
 }
 
 func (gw *Gateway) msgHandler(resp *Response) {
@@ -80,10 +83,16 @@ func (gw *Gateway) sendMessage(msg string, sid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.Addr)
-	conn.WriteMsgUDP([]byte(req), nil, gw.Addr)
+	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.Conn)
+	gw.Conn.WriteMsgUDP([]byte(req), nil, gw.Addr)
 }
 
 func (gw *Gateway) discoverDevs() {
 	gw.sendMessage("get_id_list", "")
+	resp, err := gw.readUDP()
+	if err != nil {
+		log.Printf("Read err: %+v", err)
+		return
+	}
+	gw.msgHandler(resp)
 }

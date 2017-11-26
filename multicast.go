@@ -67,6 +67,7 @@ func loopReadMulticast(conn *net.UDPConn, msgHandler func(resp *Response)) {
 		}
 		msgHandler(&resp)
 	}
+	conn.Close()
 }
 
 func msgHandler(resp *Response) {
