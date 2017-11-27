@@ -88,7 +88,7 @@ type Sensor_htData struct {
 
 var (
 	udp     bool
-	conn    *net.UDPConn
+	conn    net.PacketConn
 	gateway *Gateway
 	wg      sync.WaitGroup
 )

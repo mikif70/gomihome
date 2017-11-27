@@ -32,7 +32,7 @@ func sendMessage(addr *net.UDPAddr, msg string, sid string) {
 		log.Fatal(err)
 	}
 	log.Printf("Msg: %+v - Addr: %+v", string(req), addr)
-	conn.WriteMsgUDP([]byte(req), nil, addr)
+	conn.WriteTo([]byte(req), addr)
 }
 
 func serveMulticast(a string) {
@@ -49,12 +49,12 @@ func serveMulticast(a string) {
 	sendMessage(addr, "whois", "")
 }
 
-func loopReadMulticast(conn *net.UDPConn, msgHandler func(resp *Response)) {
-	conn.SetReadBuffer(maxDatagramSize)
+func loopReadMulticast(conn net.PacketConn, msgHandler func(resp *Response)) {
+	//	conn.SetReadBuffer(maxDatagramSize)
 
 	for multicast {
 		b := make([]byte, maxDatagramSize)
-		n, _, err := conn.ReadFromUDP(b)
+		n, _, err := conn.ReadFrom(b)
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
