@@ -114,7 +114,7 @@ func main() {
 
 	udp = true
 	wg.Add(1)
-	gateway.serveUDP()
+	gateway.dialUDP()
 	gateway.discoverDevs()
 	wg.Wait()
 }

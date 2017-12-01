@@ -16,14 +16,14 @@ type Gateway struct {
 	Addr    *net.UDPAddr
 }
 
-func (gw *Gateway) serveUDP() {
+func (gw *Gateway) dialUDP() {
 	var err error
 
 	gw.Addr, err = net.ResolveUDPAddr("udp", gw.IP+":"+gw.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn, err = net.ListenPacket("udp", gw.IP+":"+gw.Port)
+	conn, err = net.DialUDP("udp", nil, gw.Addr)
 	if err != nil {
 		log.Panic(err)
 	}
