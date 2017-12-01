@@ -22,13 +22,15 @@ type Gateway struct {
 	multicastConn   *net.UDPConn
 }
 
-var (
-	gateway = &Gateway{
+func newGW() *Gateway {
+	gateway := &Gateway{
 		MulticastIP:     "224.0.0.50",
 		MulticastPort:   "4321",
 		MaxDatagramSize: 1024,
 	}
-)
+
+	return gateway
+}
 
 func (gw *Gateway) DiscoverGateway() {
 	wg.Add(1)
@@ -38,7 +40,7 @@ func (gw *Gateway) DiscoverGateway() {
 	gw.writeMulticast("whois", "")
 }
 
-func (gw *Gateway) discoverDevs() {
+func (gw *Gateway) DiscoverDevs() {
 	wg.Add(1)
 	gw.resolveUDPAddr(gw.IP, gw.Port)
 	gw.dialUDP()
@@ -139,10 +141,10 @@ func (gw *Gateway) msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "iam":
 		log.Printf("IAM: %+v", resp)
-		gateway.sid = resp.Sid
-		gateway.IP = resp.IP
-		gateway.Port = resp.Port
-		log.Printf("Gateway: %+v", gateway)
+		gw.sid = resp.Sid
+		gw.IP = resp.IP
+		gw.Port = resp.Port
+		log.Printf("Gateway: %+v", gw)
 		gw.multicastRun = false
 		wg.Done()
 	case "get_id_list_ack":

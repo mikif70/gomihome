@@ -57,11 +57,11 @@ func main() {
 
 	log.Println("Starting handler...")
 
+	gateway := newGW()
+
 	gateway.DiscoverGateway()
 	wg.Wait()
 
-	wg.Add(1)
-	gateway.dialUDP()
-	gateway.discoverDevs()
+	gateway.DiscoverDevs()
 	wg.Wait()
 }
