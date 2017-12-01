@@ -36,61 +36,14 @@ import (
 	//	"encoding/json"
 	"io"
 	"log"
-	"net"
 	"os"
 	//	"strings"
 	"sync"
 	//	"time"
 )
 
-type Response struct {
-	Cmd   string      `json:"cmd"`
-	Model string      `json:"model"`
-	Sid   string      `json:"sid"`
-	Token string      `json:"token,omitempty"`
-	IP    string      `json:"ip,omitempty"`
-	Port  string      `json:"port,omitempty"`
-	Data  interface{} `json:"data"`
-}
-
-type Request struct {
-	Cmd string `json:"cmd"`
-	Sid string `json:"sid,omitempty"`
-}
-
-type GatewayData struct {
-	Ip           string `json:"ip"`
-	Port         string `json:"port"`
-	Rgb          int    `json:"rgb,omitempty"`
-	Illumination int    `json:"illumination,omitempty"`
-}
-
-type MotionData struct {
-	Voltage int    `json:"voltage"`
-	Status  string `json:"status`
-}
-
-type MagnetData struct {
-	Voltage int    `json:"voltage"`
-	Status  string `json:"status`
-}
-
-type SwitchData struct {
-	Voltage int    `json:"voltage"`
-	Status  string `json:"status"`
-}
-
-type Sensor_htData struct {
-	Voltage     int    `json:"voltage"`
-	Temperature string `json:"temperature"`
-	Humidity    string `json:"humidity"`
-}
-
 var (
-	udp     bool
-	conn    net.PacketConn
-	gateway *Gateway
-	wg      sync.WaitGroup
+	wg sync.WaitGroup
 )
 
 func main() {
@@ -104,14 +57,9 @@ func main() {
 
 	log.Println("Starting handler...")
 
-	gateway = &Gateway{}
-
-	multicast = true
-	wg.Add(1)
-	discoverGateway(multicastIp + ":" + multicastPort)
+	gateway.DiscoverGateway()
 	wg.Wait()
 
-	udp = true
 	wg.Add(1)
 	gateway.dialUDP()
 	gateway.discoverDevs()

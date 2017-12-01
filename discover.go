@@ -1,21 +1,22 @@
 // multicast
 package main
 
+/*
 import (
 	"encoding/json"
 	"log"
 	"net"
 )
 
-const (
-	multicastIp     = "224.0.0.50"
-	multicastPort   = "4321"
-	maxDatagramSize = 1024
-)
-
 var (
 	multicast bool
 )
+
+type Multicast struct {
+	Addr    *net.UDPAddr
+	Conn    *net.UDPConn
+	Running bool
+}
 
 func sendMessage(addr *net.UDPAddr, msg string, sid string) {
 
@@ -90,3 +91,4 @@ func msgHandler(resp *Response) {
 		log.Printf("DEFAULT: %+v", resp)
 	}
 }
+*/

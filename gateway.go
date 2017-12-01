@@ -8,59 +8,145 @@ import (
 )
 
 type Gateway struct {
-	IP      string
-	Port    string
-	Sid     string
-	Running bool
-	Conn    *net.UDPConn
-	Addr    *net.UDPAddr
+	IP              string
+	Port            string
+	MulticastIP     string
+	MulticastPort   string
+	MaxDatagramSize int
+	sid             string
+	running         bool
+	conn            *net.UDPConn
+	addr            *net.UDPAddr
+	multicastRun    bool
+	multicastAddr   *net.UDPAddr
+	multicastConn   *net.UDPConn
+}
+
+var (
+	gateway = &Gateway{
+		MulticastIP:     "224.0.0.50",
+		MulticastPort:   "4321",
+		MaxDatagramSize: 1024,
+	}
+)
+
+func (gw *Gateway) DiscoverGateway() {
+	wg.Add(1)
+	gw.resolveMulticastAddr()
+	gw.dialMulticast()
+	go gw.ReadMulticast()
+	gw.writeMulticast("whois", "")
+}
+
+func (gw *Gateway) discoverDevs() {
+	wg.Add(1)
+	gw.resolveUDPAddr(gw.IP, gw.Port)
+	gw.dialUDP()
+	go gw.readUDP()
+	gw.writeUdp("get_id_list", "")
+
+}
+
+func (gw *Gateway) resolveUDPAddr(ip string, port string) {
+	var err error
+
+	gw.IP = ip
+	gw.Port = port
+
+	gw.addr, err = net.ResolveUDPAddr("udp", gw.IP+":"+gw.Port)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (gw *Gateway) resolveMulticastAddr() {
+	var err error
+
+	gw.multicastAddr, err = net.ResolveUDPAddr("udp", gw.MulticastIP+":"+gw.MulticastPort)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (gw *Gateway) dialUDP() {
 	var err error
 
-	gw.Addr, err = net.ResolveUDPAddr("udp", gw.IP+":"+gw.Port)
-	if err != nil {
-		log.Fatal(err)
-	}
-	gw.Conn, err = net.DialUDP("udp", nil, gw.Addr)
+	gw.conn, err = net.DialUDP("udp", nil, gw.addr)
 	if err != nil {
 		log.Panic(err)
 	}
-	gw.Running = true
+	gw.running = true
 }
 
-func (gw *Gateway) readUDP() (resp *Response, err error) {
+func (gw *Gateway) dialMulticast() {
+	var err error
 
-	log.Printf("Reading UDP: %+v", gw.Addr)
-
-	//	conn.SetReadBuffer(maxDatagramSize)
-
-	b := make([]byte, maxDatagramSize)
-	n, err := gw.Conn.Read(b)
+	gw.multicastConn, err = net.ListenMulticastUDP("udp", nil, gw.multicastAddr)
 	if err != nil {
-		log.Fatal("ReadFromUDP failed:", err)
+		log.Panic(err)
 	}
+	gw.multicastRun = true
+}
 
-	log.Printf("Read from UDP: %d bytes", n)
+func (gw *Gateway) readUDP() {
 
-	resp = &Response{}
-	err = json.Unmarshal(b[:n], &resp)
-	if err != nil {
-		log.Printf("JSON Err: %+v", err)
-		return nil, err
+	for gw.running {
+
+		log.Printf("Reading UDP: %+v", gw.addr)
+
+		//	conn.SetReadBuffer(maxDatagramSize)
+
+		b := make([]byte, gw.MaxDatagramSize)
+		n, err := gw.conn.Read(b)
+		if err != nil {
+			log.Fatal("ReadFromUDP failed:", err)
+		}
+
+		log.Printf("Read from UDP: %d bytes", n)
+
+		resp := Response{}
+		err = json.Unmarshal(b[:n], &resp)
+		if err != nil {
+			log.Printf("JSON Err: %+v", err)
+			continue
+		}
+		gw.msgHandler(&resp)
 	}
+	gw.conn.Close()
+}
 
-	return resp, nil
+func (gw *Gateway) ReadMulticast() {
 
+	for gw.multicastRun {
+		b := make([]byte, gw.MaxDatagramSize)
+		n, _, err := gw.multicastConn.ReadFrom(b)
+		if err != nil {
+			log.Fatal("ReadFromUDP failed:", err)
+		}
+
+		resp := Response{}
+		err = json.Unmarshal(b[:n], &resp)
+		if err != nil {
+			log.Printf("JSON Err: %+v", err)
+			continue
+		}
+		gw.msgHandler(&resp)
+	}
+	gw.multicastConn.Close()
 }
 
 func (gw *Gateway) msgHandler(resp *Response) {
 	switch resp.Cmd {
-	case "heartbeat":
-		log.Printf("HEARTBEAT: %+v", resp)
+	case "iam":
+		log.Printf("IAM: %+v", resp)
+		gateway.sid = resp.Sid
+		gateway.IP = resp.IP
+		gateway.Port = resp.Port
+		log.Printf("Gateway: %+v", gateway)
+		gw.multicastRun = false
+		wg.Done()
 	case "get_id_list_ack":
-		log.Printf("Get ACK: %+v\n", resp)
+		log.Printf("Get ACK: %+v\n", resp.Data)
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
 	default:
@@ -68,7 +154,7 @@ func (gw *Gateway) msgHandler(resp *Response) {
 	}
 }
 
-func (gw *Gateway) sendMessage(msg string, sid string) {
+func (gw *Gateway) writeUdp(msg string, sid string) {
 
 	var req []byte
 	var err error
@@ -82,16 +168,24 @@ func (gw *Gateway) sendMessage(msg string, sid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.Conn)
-	gw.Conn.Write([]byte(req))
+	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.conn)
+	gw.conn.Write([]byte(req))
 }
 
-func (gw *Gateway) discoverDevs() {
-	gw.sendMessage("get_id_list", "")
-	resp, err := gw.readUDP()
-	if err != nil {
-		log.Printf("Read err: %+v", err)
-		return
+func (gw *Gateway) writeMulticast(msg string, sid string) {
+
+	var req []byte
+	var err error
+
+	if sid != "" {
+		req, err = json.Marshal(Request{Cmd: msg, Sid: sid})
+	} else {
+		req, err = json.Marshal(Request{Cmd: msg})
 	}
-	gw.msgHandler(resp)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.conn)
+	gw.multicastConn.Write([]byte(req))
 }
