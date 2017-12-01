@@ -188,6 +188,6 @@ func (gw *Gateway) writeMulticast(msg string, sid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.conn)
+	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.multicastConn)
 	gw.multicastConn.Write([]byte(req))
 }
