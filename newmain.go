@@ -108,9 +108,8 @@ func main() {
 
 	multicast = true
 	wg.Add(1)
-	serveMulticast(multicastIp + ":" + multicastPort)
+	discoverGateway(multicastIp + ":" + multicastPort)
 	wg.Wait()
-	log.Printf("Gateway: %+v", gateway)
 
 	udp = true
 	wg.Add(1)

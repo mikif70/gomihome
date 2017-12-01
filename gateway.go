@@ -12,7 +12,7 @@ type Gateway struct {
 	Port    string
 	Sid     string
 	Running bool
-	Conn    net.PacketConn
+	Conn    *net.UDPConn
 	Addr    *net.UDPAddr
 }
 
@@ -23,11 +23,10 @@ func (gw *Gateway) dialUDP() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	conn, err = net.DialUDP("udp", nil, gw.Addr)
+	gw.Conn, err = net.DialUDP("udp", nil, gw.Addr)
 	if err != nil {
 		log.Panic(err)
 	}
-	gw.Conn = conn
 	gw.Running = true
 }
 
@@ -38,7 +37,7 @@ func (gw *Gateway) readUDP() (resp *Response, err error) {
 	//	conn.SetReadBuffer(maxDatagramSize)
 
 	b := make([]byte, maxDatagramSize)
-	n, _, err := gw.Conn.ReadFrom(b)
+	n, err := gw.Conn.Read(b)
 	if err != nil {
 		log.Fatal("ReadFromUDP failed:", err)
 	}
@@ -84,7 +83,7 @@ func (gw *Gateway) sendMessage(msg string, sid string) {
 		log.Fatal(err)
 	}
 	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.Conn)
-	gw.Conn.WriteTo([]byte(req), gw.Addr)
+	gw.Conn.Write([]byte(req))
 }
 
 func (gw *Gateway) discoverDevs() {
