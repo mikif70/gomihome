@@ -81,6 +81,7 @@ func (mu *Multicast) write(msg string, sid string) {
 
 	var req []byte
 	var err error
+	var n int
 
 	if sid != "" {
 		req, err = json.Marshal(Request{Cmd: msg, Sid: sid})
@@ -89,10 +90,14 @@ func (mu *Multicast) write(msg string, sid string) {
 	}
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Marshall error: %+v", err)
 	}
 	log.Printf("Msg: %+v - Addr: %+v", string(req), mu.Conn)
-	mu.Conn.Write([]byte(req))
+	n, err = mu.Conn.Write([]byte(req))
+	if err != nil {
+		log.Printf("Write error: %+v", err)
+	}
+	log.Printf("Wrote %d bytes", n)
 }
 
 func (mu *Multicast) msgHandler(resp *Response) {
