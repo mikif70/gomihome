@@ -91,13 +91,11 @@ func (gw *Gateway) msgHandler(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		//		retval := strings.Split(resp.Data.(string), ",")
-		//		r := strings.NewReplacer("\"", "", "[", "", "]", "")
 		for i := range dt {
-			//ns := r.Replace(retval[i])
 			log.Printf("Data: %d - %s", i, dt[i])
 			gw.write("read", dt[i])
 		}
+		gw.write("read", gw.sid)
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
 	default:

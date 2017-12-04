@@ -8,6 +8,8 @@
 
 
 	Switch:
+		voltage:
+			<int>
 		status:
 			"click"
 			"double_click"
@@ -15,6 +17,8 @@
 			"long_click_release"
 
 	Motion:
+		voltage:
+			<int>
 		status:
 			"motion"
 		no_motion:
