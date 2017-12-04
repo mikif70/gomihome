@@ -3,8 +3,8 @@ package main
 
 const (
 	MulticastIP     = "224.0.0.50"
-	MulticastRPort  = "4321"
-	MulticastWPort  = "9898"
+	MulticastWPort  = "4321"
+	MulticastRPort  = "9898"
 	MaxDatagramSize = 1024
 )
 
