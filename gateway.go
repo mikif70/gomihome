@@ -98,6 +98,50 @@ func (gw *Gateway) msgHandler(resp *Response) {
 		gw.write("read", gw.sid)
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
+		switch resp.Model {
+		case "motion":
+			dt := MotionData{}
+			err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
+			if err != nil {
+				log.Printf("JSON Data Err: %+v", err)
+				return
+			}
+			log.Printf("Motion: %+v", dt)
+		case "magnet":
+			dt := MagnetData{}
+			err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
+			if err != nil {
+				log.Printf("JSON Data Err: %+v", err)
+				return
+			}
+			log.Printf("Magnet: %+v", dt)
+		case "sensor_ht":
+			dt := Sensor_htData{}
+			err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
+			if err != nil {
+				log.Printf("JSON Data Err: %+v", err)
+				return
+			}
+			log.Printf("Sensor_HT: %+v", dt)
+		case "switch":
+			dt := SwitchData{}
+			err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
+			if err != nil {
+				log.Printf("JSON Data Err: %+v", err)
+				return
+			}
+			log.Printf("Switch: %+v", dt)
+		case "gateway":
+			dt := GatewayData{}
+			err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
+			if err != nil {
+				log.Printf("JSON Data Err: %+v", err)
+				return
+			}
+			log.Printf("Gateway: %+v", dt)
+		default:
+			log.Printf("Model not defined: %s", resp.Model)
+		}
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}

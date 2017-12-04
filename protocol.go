@@ -18,16 +18,7 @@ type Response struct {
 	Data  interface{} `json:"data"`
 }
 
-type DataIdList []string
-
 type Request struct {
 	Cmd string `json:"cmd"`
 	Sid string `json:"sid,omitempty"`
-}
-
-type GatewayData struct {
-	Ip           string `json:"ip"`
-	Port         string `json:"port"`
-	Rgb          int    `json:"rgb,omitempty"`
-	Illumination int    `json:"illumination,omitempty"`
 }
