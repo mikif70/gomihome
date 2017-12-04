@@ -1,6 +1,13 @@
 // protocol
 package main
 
+const (
+	MulticastIP     = "224.0.0.50"
+	MulticastRPort  = "4321"
+	MulticastWPort  = "9898"
+	MaxDatagramSize = 1024
+)
+
 type Response struct {
 	Cmd   string      `json:"cmd"`
 	Model string      `json:"model"`

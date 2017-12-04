@@ -8,22 +8,16 @@ import (
 )
 
 type Multicast struct {
-	IP              string
-	Port            string
-	run             bool
-	discover        bool
-	addr            *net.UDPAddr
-	conn            *net.UDPConn
-	MaxDatagramSize int
-	Gateway         *Gateway
+	run      bool
+	discover bool
+	raddr    *net.UDPAddr
+	waddr    *net.UDPAddr
+	conn     *net.UDPConn
+	Gateway  *Gateway
 }
 
 func newMulticast() *Multicast {
-	multicast := &Multicast{
-		IP:              "224.0.0.50",
-		Port:            "4321",
-		MaxDatagramSize: 1024,
-	}
+	multicast := &Multicast{}
 
 	return multicast
 }
@@ -41,17 +35,22 @@ func (mu *Multicast) DiscoverGateway(gw *Gateway) {
 func (mu *Multicast) resolveAddr() {
 	var err error
 
-	mu.addr, err = net.ResolveUDPAddr("udp", mu.IP+":"+mu.Port)
+	mu.raddr, err = net.ResolveUDPAddr("udp", MulticastIP+":"+MulticastRPort)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("multicast addr: %+v", mu.addr)
+	mu.waddr, err = net.ResolveUDPAddr("udp", MulticastIP+":"+MulticastWPort)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("multicast addr: %+v - %+v", mu.raddr, mu.waddr)
 }
 
 func (mu *Multicast) dial() {
 	var err error
 
-	mu.conn, err = net.ListenMulticastUDP("udp", nil, mu.addr)
+	mu.conn, err = net.ListenMulticastUDP("udp", nil, mu.raddr)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -63,7 +62,7 @@ func (mu *Multicast) read() {
 
 	log.Printf("start multicast reading....")
 	for mu.run {
-		b := make([]byte, mu.MaxDatagramSize)
+		b := make([]byte, MaxDatagramSize)
 		n, _, err := mu.conn.ReadFrom(b)
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
@@ -95,8 +94,8 @@ func (mu *Multicast) write(msg string, sid string) {
 	if err != nil {
 		log.Printf("Marshall error: %+v", err)
 	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), mu.addr)
-	n, err = mu.conn.WriteTo([]byte(req), mu.addr)
+	log.Printf("Msg: %+v - Addr: %+v", string(req), mu.waddr)
+	n, err = mu.conn.WriteTo([]byte(req), mu.waddr)
 	if err != nil {
 		log.Printf("Write error: %+v", err)
 	}

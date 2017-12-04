@@ -8,19 +8,16 @@ import (
 )
 
 type Gateway struct {
-	IP              string
-	Port            string
-	sid             string
-	running         bool
-	conn            *net.UDPConn
-	addr            *net.UDPAddr
-	MaxDatagramSize int
+	IP      string
+	Port    string
+	sid     string
+	running bool
+	conn    *net.UDPConn
+	addr    *net.UDPAddr
 }
 
 func newGateway() *Gateway {
-	gateway := &Gateway{
-		MaxDatagramSize: 1024,
-	}
+	gateway := &Gateway{}
 
 	return gateway
 }
@@ -64,7 +61,7 @@ func (gw *Gateway) readUDP() {
 
 		//	conn.SetReadBuffer(maxDatagramSize)
 
-		b := make([]byte, gw.MaxDatagramSize)
+		b := make([]byte, MaxDatagramSize)
 		n, err := gw.conn.Read(b)
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
