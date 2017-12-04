@@ -86,7 +86,7 @@ func (gw *Gateway) msgHandler(resp *Response) {
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp.Data)
 		dt := DataIdList{}
-		err := json.Unmarshal(resp.Data.([]byte), &dt)
+		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
 		if err != nil {
 			log.Printf("JSON Data Err: %+v", err)
 			return
