@@ -115,6 +115,8 @@ func (mu *Multicast) msgHandler(resp *Response) {
 			mu.discover = false
 			wg.Done()
 		}
+	case "heartbeat":
+		log.Printf("Heartbeat: %s - %s", resp.Model, resp.Sid)
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}
