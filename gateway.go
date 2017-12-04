@@ -24,14 +24,14 @@ func newGateway() *Gateway {
 
 func (gw *Gateway) DiscoverDevs() {
 	wg.Add(1)
-	gw.resolveUDPAddr(gw.IP, gw.Port)
-	gw.dialUDP()
-	go gw.readUDP()
-	gw.writeUdp("get_id_list", "")
+	gw.resolveAddr(gw.IP, gw.Port)
+	gw.dial()
+	go gw.read()
+	gw.write("get_id_list", "")
 
 }
 
-func (gw *Gateway) resolveUDPAddr(ip string, port string) {
+func (gw *Gateway) resolveAddr(ip string, port string) {
 	var err error
 
 	gw.IP = ip
@@ -43,7 +43,7 @@ func (gw *Gateway) resolveUDPAddr(ip string, port string) {
 	}
 }
 
-func (gw *Gateway) dialUDP() {
+func (gw *Gateway) dial() {
 	var err error
 
 	gw.conn, err = net.DialUDP("udp", nil, gw.addr)
@@ -53,7 +53,7 @@ func (gw *Gateway) dialUDP() {
 	gw.running = true
 }
 
-func (gw *Gateway) readUDP() {
+func (gw *Gateway) read() {
 
 	for gw.running {
 
@@ -91,7 +91,7 @@ func (gw *Gateway) msgHandler(resp *Response) {
 	}
 }
 
-func (gw *Gateway) writeUdp(msg string, sid string) {
+func (gw *Gateway) write(msg string, sid string) {
 
 	var req []byte
 	var err error
