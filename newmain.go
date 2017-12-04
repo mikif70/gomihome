@@ -58,9 +58,11 @@ func main() {
 	log.Println("Starting handler...")
 
 	gateway := newGW()
+	multicast := newMulticast()
 
-	gateway.DiscoverGateway()
+	multicast.DiscoverGateway(gateway)
 	wg.Wait()
+	log.Printf("Gateway: %+v", gateway)
 
 	gateway.DiscoverDevs()
 	wg.Wait()
