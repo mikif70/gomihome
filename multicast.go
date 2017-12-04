@@ -11,6 +11,7 @@ type Multicast struct {
 	IP              string
 	Port            string
 	run             bool
+	discover        bool
 	addr            *net.UDPAddr
 	conn            *net.UDPConn
 	MaxDatagramSize int
@@ -30,6 +31,7 @@ func newMulticast() *Multicast {
 func (mu *Multicast) DiscoverGateway(gw *Gateway) {
 	wg.Add(1)
 	mu.Gateway = gw
+	mu.discover = true
 	mu.resolveAddr()
 	mu.dial()
 	go mu.read()
@@ -104,13 +106,15 @@ func (mu *Multicast) write(msg string, sid string) {
 func (mu *Multicast) msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "iam":
-		log.Printf("IAM: %+v", resp)
-		mu.Gateway.sid = resp.Sid
-		mu.Gateway.IP = resp.IP
-		mu.Gateway.Port = resp.Port
-		log.Printf("mu.Gateway: %+v", mu.Gateway)
-		//		gw.multicastRun = false
-		wg.Done()
+		if mu.discover {
+			log.Printf("IAM: %+v", resp)
+			mu.Gateway.sid = resp.Sid
+			mu.Gateway.IP = resp.IP
+			mu.Gateway.Port = resp.Port
+			log.Printf("mu.Gateway: %+v", mu.Gateway)
+			mu.discover = false
+			wg.Done()
+		}
 	default:
 		log.Printf("DEFAULT: %+v", resp)
 	}
