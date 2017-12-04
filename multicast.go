@@ -8,12 +8,12 @@ import (
 )
 
 type Multicast struct {
-	run      bool
+	running  bool
 	discover bool
 	raddr    *net.UDPAddr
 	waddr    *net.UDPAddr
 	conn     *net.UDPConn
-	Gateway  *Gateway
+	Gateway  *Udp
 }
 
 func newMulticast() *Multicast {
@@ -22,7 +22,7 @@ func newMulticast() *Multicast {
 	return multicast
 }
 
-func (mu *Multicast) DiscoverGateway(gw *Gateway) {
+func (mu *Multicast) DiscoverGateway(gw *Udp) {
 	wg.Add(1)
 	mu.Gateway = gw
 	mu.discover = true
@@ -54,14 +54,14 @@ func (mu *Multicast) dial() {
 	if err != nil {
 		log.Panic(err)
 	}
-	mu.run = true
+	mu.running = true
 	log.Printf("multicast conn: %+v", mu.conn)
 }
 
 func (mu *Multicast) read() {
 
 	log.Printf("start multicast reading....")
-	for mu.run {
+	for mu.running {
 		b := make([]byte, MaxDatagramSize)
 		n, _, err := mu.conn.ReadFrom(b)
 		if err != nil {
@@ -124,7 +124,7 @@ func (mu *Multicast) msgHandler(resp *Response) {
 	}
 }
 
-func (mu *Multicast) unmarshallData(resp *Response) {
+func (gw *Multicast) unmarshallData(resp *Response) {
 	switch resp.Model {
 	case "motion":
 		dt := MotionData{}
