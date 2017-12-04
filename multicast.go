@@ -29,6 +29,7 @@ func newMulticast() *Multicast {
 
 func (mu *Multicast) DiscoverGateway(gw *Gateway) {
 	wg.Add(1)
+	mu.Gateway = gw
 	mu.resolveAddr()
 	mu.dial()
 	go mu.read()
