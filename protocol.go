@@ -18,7 +18,9 @@ type Response struct {
 	Data  interface{} `json:"data"`
 }
 
-type IdListData []string
+type DataIdList struct {
+	Id []string
+}
 
 type Request struct {
 	Cmd string `json:"cmd"`

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
-	"strings"
+	//	"strings"
 )
 
 type Gateway struct {
@@ -85,12 +85,18 @@ func (gw *Gateway) msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp.Data)
-		retval := strings.Split(resp.Data.(string), ",")
-		r := strings.NewReplacer("\"", "", "[", "", "]", "")
-		for i := range retval {
-			ns := r.Replace(retval[i])
-			log.Printf("Data: %d - %s", i, ns)
-			gw.write("read", ns)
+		dt := DataIdList{}
+		err := json.Unmarshal(resp.Data.([]byte), &dt)
+		if err != nil {
+			log.Printf("JSON Data Err: %+v", err)
+			return
+		}
+		//		retval := strings.Split(resp.Data.(string), ",")
+		//		r := strings.NewReplacer("\"", "", "[", "", "]", "")
+		for i := range dt.Id {
+			//ns := r.Replace(retval[i])
+			log.Printf("Data: %d - %s", i, dt.Id[i])
+			gw.write("read", dt.Id[i])
 		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
