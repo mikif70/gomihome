@@ -27,6 +27,14 @@ func newMulticast() *Multicast {
 	return multicast
 }
 
+func (mu *Multicast) DiscoverGateway(gw *Gateway) {
+	wg.Add(1)
+	mu.resolveAddr()
+	mu.dial()
+	go mu.read()
+	mu.write("whois", "")
+}
+
 func (mu *Multicast) resolveAddr() {
 	var err error
 
@@ -34,14 +42,7 @@ func (mu *Multicast) resolveAddr() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func (mu *Multicast) DiscoverGateway(gw *Gateway) {
-	wg.Add(1)
-	mu.resolveAddr()
-	mu.dial()
-	go mu.read()
-	mu.write("whois", "")
+	log.Printf("multicast addr: %+v", mu.Addr)
 }
 
 func (mu *Multicast) dial() {
@@ -52,10 +53,12 @@ func (mu *Multicast) dial() {
 		log.Panic(err)
 	}
 	mu.run = true
+	log.Printf("multicast conn: %+v", mu.Conn)
 }
 
 func (mu *Multicast) read() {
 
+	log.Printf("start multicast reading....")
 	for mu.run {
 		b := make([]byte, mu.MaxDatagramSize)
 		n, _, err := mu.Conn.ReadFrom(b)

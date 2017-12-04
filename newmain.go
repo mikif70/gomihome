@@ -55,15 +55,15 @@ func main() {
 	mw := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(mw)
 
-	log.Println("Starting handler...")
-
 	gateway := newGW()
 	multicast := newMulticast()
 
+	log.Println("Starting Discover gateway...")
 	multicast.DiscoverGateway(gateway)
 	wg.Wait()
 	log.Printf("Gateway: %+v", gateway)
 
+	log.Println("Starting Discover devices...")
 	gateway.DiscoverDevs()
 	wg.Wait()
 }
