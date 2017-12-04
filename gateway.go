@@ -93,10 +93,10 @@ func (gw *Gateway) msgHandler(resp *Response) {
 		}
 		//		retval := strings.Split(resp.Data.(string), ",")
 		//		r := strings.NewReplacer("\"", "", "[", "", "]", "")
-		for i := range dt.Id {
+		for i := range dt {
 			//ns := r.Replace(retval[i])
-			log.Printf("Data: %d - %s", i, dt.Id[i])
-			gw.write("read", dt.Id[i])
+			log.Printf("Data: %d - %s", i, dt[i])
+			gw.write("read", dt[i])
 		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
