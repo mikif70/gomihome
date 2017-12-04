@@ -17,7 +17,7 @@ type Gateway struct {
 	MaxDatagramSize int
 }
 
-func newGW() *Gateway {
+func newGateway() *Gateway {
 	gateway := &Gateway{
 		MaxDatagramSize: 1024,
 	}
