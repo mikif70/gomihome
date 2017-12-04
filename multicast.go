@@ -20,7 +20,7 @@ type Multicast struct {
 func newMulticast() *Multicast {
 	multicast := &Multicast{
 		IP:              "224.0.0.50",
-		Port:            "9898",
+		Port:            "4321",
 		MaxDatagramSize: 1024,
 	}
 
