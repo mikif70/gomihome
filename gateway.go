@@ -84,6 +84,9 @@ func (gw *Gateway) msgHandler(resp *Response) {
 	switch resp.Cmd {
 	case "get_id_list_ack":
 		log.Printf("Get ACK: %+v\n", resp.Data)
+		for i := range resp.Data.(IdListData) {
+			log.Printf("data: %d", i)
+		}
 	case "read_ack":
 		log.Printf("Read ACK: %+v", resp)
 	default:
