@@ -44,7 +44,7 @@ func (mu *Multicast) DiscoverGateway(gw *Udp) {
 	mu.dial()
 	go mu.read()
 	mu.write("whois", "")
-	mu.unarshallPacket()
+	go mu.unarshallPacket()
 }
 
 func (mu *Multicast) resolveAddr() {
@@ -156,6 +156,9 @@ func (mu *Multicast) unarshallPacket() {
 			log.Printf("JSON Err: %+v - %+v", err, b.packet)
 			continue
 		}
+
+		log.Printf("new: %+v - %s %s", b.timestamp, resp.Cmd, resp.Sid)
+		log.Printf("old: %+v - %s %s", lastTimestamp, lastCmd, lastSid)
 
 		if b.timestamp.Equal(lastTimestamp) && resp.Cmd == lastCmd && resp.Sid == lastSid {
 			continue
