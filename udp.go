@@ -9,6 +9,10 @@ import (
 	//	"strings"
 )
 
+const (
+	timeToTick = 10 * time.Minute
+)
+
 type Udp struct {
 	IP      string
 	Port    string
@@ -22,7 +26,7 @@ type Devices []Device
 
 var (
 	devices = make([]Device, 0)
-	ticker  = time.NewTicker(1 * time.Minute)
+	ticker  = time.NewTicker(timeToTick)
 	numdevs = 0
 )
 
