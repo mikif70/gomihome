@@ -31,6 +31,8 @@ type Multicast struct {
 func newMulticast() *Multicast {
 	multicast := &Multicast{}
 
+	mchan = make(chan MPack)
+
 	return multicast
 }
 
