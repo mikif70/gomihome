@@ -157,10 +157,10 @@ func (mu *Multicast) unarshallPacket() {
 			continue
 		}
 
-		log.Printf("new: %+v - %s %s", b.timestamp, resp.Cmd, resp.Sid)
-		log.Printf("old: %+v - %s %s", lastTimestamp, lastCmd, lastSid)
-
 		if b.timestamp == lastTimestamp && resp.Cmd == lastCmd && resp.Sid == lastSid {
+			log.Printf("new: %+v - %s - %s", b.timestamp, resp.Cmd, resp.Sid)
+			log.Printf("old: %+v - %s - %s", lastTimestamp, lastCmd, lastSid)
+
 			continue
 		}
 
