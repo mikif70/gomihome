@@ -96,9 +96,8 @@ func (mu *Multicast) read() {
 		}
 
 		if timestamp == lastTimestamp && resp.Cmd == lastCmd && resp.Sid == lastSid {
-			log.Printf("new: %+v - %s - %s", timestamp, resp.Cmd, resp.Sid)
-			log.Printf("old: %+v - %s - %s", lastTimestamp, lastCmd, lastSid)
-
+			//			log.Printf("new: %+v - %s - %s", timestamp, resp.Cmd, resp.Sid)
+			//			log.Printf("old: %+v - %s - %s", lastTimestamp, lastCmd, lastSid)
 			continue
 		}
 
