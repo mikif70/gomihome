@@ -43,8 +43,8 @@ func (mu *Multicast) DiscoverGateway(gw *Udp) {
 	mu.resolveAddr()
 	mu.dial()
 	go mu.read()
-	go mu.unarshallPacket()
 	mu.write("whois", "")
+	mu.unarshallPacket()
 }
 
 func (mu *Multicast) resolveAddr() {
