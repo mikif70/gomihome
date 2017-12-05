@@ -122,6 +122,7 @@ func (gw *Udp) msgHandler(resp *Response) {
 			Sid:   gw.sid,
 			Model: "gateway",
 		})
+		log.Printf("devs: %+v", devices)
 		go gw.doReadDevs()
 	case "read_ack":
 		//		log.Printf("Read ACK: %+v", resp)
