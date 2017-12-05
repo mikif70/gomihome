@@ -68,7 +68,7 @@ func (mu *Multicast) read() {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
 
-		log.Printf("pkt: %+v", b)
+		//		log.Printf("pkt: %+v", b)
 
 		resp := Response{}
 		err = json.Unmarshal(b[:n], &resp)
