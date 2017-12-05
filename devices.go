@@ -1,6 +1,12 @@
 // devices
 package main
 
+type Device struct {
+	Name  string `json:"name"`
+	Model string `json:"model"`
+	Sid   string `json:"sid"`
+}
+
 type DataIdList []string
 
 type GatewayData struct {

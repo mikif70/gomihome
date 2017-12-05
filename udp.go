@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 	//	"strings"
 )
 
@@ -16,6 +17,13 @@ type Udp struct {
 	conn    *net.UDPConn
 	addr    *net.UDPAddr
 }
+
+type Devices []Device
+
+var (
+	devices = make([]Device, 0)
+	ticker  = time.NewTicker(1 * time.Minute)
+)
 
 func newUdp() *Udp {
 	udp := &Udp{}
@@ -52,6 +60,16 @@ func (gw *Udp) dial() {
 		log.Panic(err)
 	}
 	gw.running = true
+}
+
+func (gw *Udp) doReadDevs() {
+	for t := range ticker.C {
+		for d := range devices {
+			gw.write("read", devices[d].Sid)
+		}
+		gw.write("read", gw.sid)
+		log.Printf("Read: %+v", t)
+	}
 }
 
 func (gw *Udp) read() {
@@ -94,8 +112,17 @@ func (gw *Udp) msgHandler(resp *Response) {
 		for i := range dt {
 			log.Printf("Data: %d - %s", i, dt[i])
 			gw.write("read", dt[i])
+			devices = append(devices, Device{
+				Sid:   resp.Sid,
+				Model: resp.Model,
+			})
 		}
 		gw.write("read", gw.sid)
+		devices = append(devices, Device{
+			Sid:   gw.sid,
+			Model: "gateway",
+		})
+		go gw.doReadDevs()
 	case "read_ack":
 		//		log.Printf("Read ACK: %+v", resp)
 		gw.unmarshallData(resp)
