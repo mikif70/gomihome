@@ -23,6 +23,7 @@ type Devices []Device
 var (
 	devices = make([]Device, 0)
 	ticker  = time.NewTicker(1 * time.Minute)
+	numdevs = 0
 )
 
 func newUdp() *Udp {
@@ -64,6 +65,7 @@ func (gw *Udp) dial() {
 
 func (gw *Udp) doReadDevs() {
 	for t := range ticker.C {
+		log.Printf("devs: %+v", devices)
 		for d := range devices {
 			gw.write("read", devices[d].Sid)
 		}
@@ -109,23 +111,26 @@ func (gw *Udp) msgHandler(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
+		numdevs = len(dt)
 		for i := range dt {
 			log.Printf("Data: %d - %s", i, dt[i])
 			gw.write("read", dt[i])
-			devices = append(devices, Device{
-				Sid:   resp.Sid,
-				Model: resp.Model,
-			})
 		}
 		gw.write("read", gw.sid)
 		devices = append(devices, Device{
 			Sid:   gw.sid,
 			Model: "gateway",
 		})
-		log.Printf("devs: %+v", devices)
 		go gw.doReadDevs()
 	case "read_ack":
 		//		log.Printf("Read ACK: %+v", resp)
+		if numdevs != 0 {
+			devices = append(devices, Device{
+				Sid:   resp.Sid,
+				Model: resp.Model,
+			})
+			numdevs--
+		}
 		gw.unmarshallData(resp)
 	case "heartbeat":
 		gw.unmarshallData(resp)
