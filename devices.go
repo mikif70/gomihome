@@ -12,7 +12,7 @@ type GatewayData struct {
 type MotionData struct {
 	Voltage  int    `json:"voltage,omitempty"`
 	Status   string `json:"status,omitempty"`
-	NoMotion int    `json:"no_motion,omitempty"`
+	NoMotion string `json:"no_motion,omitempty"`
 }
 
 type MagnetData struct {
