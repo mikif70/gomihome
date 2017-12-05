@@ -115,9 +115,10 @@ func (mu *Multicast) msgHandler(resp *Response) {
 			wg.Done()
 		}
 	case "heartbeat":
-		log.Printf("Heartbeat: %s - %s", resp.Model, resp.Sid)
+		//		log.Printf("Heartbeat: %s - %s", resp.Model, resp.Sid)
+		mu.unmarshallData(resp)
 	case "report":
-		log.Printf("REPORT: %+v", resp)
+		//		log.Printf("REPORT: %+v", resp)
 		mu.unmarshallData(resp)
 	default:
 		log.Printf("DEFAULT: %+v", resp)
@@ -133,7 +134,7 @@ func (gw *Multicast) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Motion: %+v", dt)
+		log.Printf("Motion (%s): %+v", resp.Cmd, dt)
 	case "magnet":
 		dt := MagnetData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -141,7 +142,7 @@ func (gw *Multicast) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Magnet: %+v", dt)
+		log.Printf("Magnet (%s): %+v", resp.Cmd, dt)
 	case "sensor_ht":
 		dt := Sensor_htData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -149,7 +150,7 @@ func (gw *Multicast) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Sensor_HT: %+v", dt)
+		log.Printf("Sensor_HT (%s): %+v", resp.Cmd, dt)
 	case "switch":
 		dt := SwitchData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -157,7 +158,7 @@ func (gw *Multicast) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Switch: %+v", dt)
+		log.Printf("Switch (%s): %+v", resp.Cmd, dt)
 	case "gateway":
 		dt := GatewayData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -165,7 +166,7 @@ func (gw *Multicast) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Gateway: %+v", dt)
+		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
 	default:
 		log.Printf("Model not defined: %s", resp.Model)
 	}

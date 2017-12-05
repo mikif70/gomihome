@@ -97,7 +97,9 @@ func (gw *Udp) msgHandler(resp *Response) {
 		}
 		gw.write("read", gw.sid)
 	case "read_ack":
-		log.Printf("Read ACK: %+v", resp)
+		//		log.Printf("Read ACK: %+v", resp)
+		gw.unmarshallData(resp)
+	case "heartbeat":
 		gw.unmarshallData(resp)
 	default:
 		log.Printf("DEFAULT: %+v", resp)
@@ -113,7 +115,7 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Motion: %+v", dt)
+		log.Printf("Motion (%s): %+v", resp.Cmd, dt)
 	case "magnet":
 		dt := MagnetData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -121,7 +123,7 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Magnet: %+v", dt)
+		log.Printf("Magnet (%s): %+v", resp.Cmd, dt)
 	case "sensor_ht":
 		dt := Sensor_htData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -129,7 +131,7 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Sensor_HT: %+v", dt)
+		log.Printf("Sensor_HT (%s): %+v", resp.Cmd, dt)
 	case "switch":
 		dt := SwitchData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -137,7 +139,7 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Switch: %+v", dt)
+		log.Printf("Switch (%s): %+v", resp.Cmd, dt)
 	case "gateway":
 		dt := GatewayData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -145,7 +147,7 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Gateway: %+v", dt)
+		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
 	default:
 		log.Printf("Model not defined: %s", resp.Model)
 	}
