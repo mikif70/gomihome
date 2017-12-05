@@ -84,7 +84,7 @@ func (mu *Multicast) read() {
 		}
 
 		nb := make([]byte, n)
-		copy(b[:n], nb)
+		copy(nb, b[:n])
 
 		mchan <- MPack{
 			packet:    nb,
