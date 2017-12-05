@@ -44,7 +44,6 @@ func (mu *Multicast) DiscoverGateway(gw *Udp) {
 	mu.dial()
 	go mu.read()
 	mu.write("whois", "")
-	go mu.unarshallPacket()
 }
 
 func (mu *Multicast) resolveAddr() {
@@ -75,6 +74,10 @@ func (mu *Multicast) dial() {
 
 func (mu *Multicast) read() {
 
+	var lastTimestamp, timestamp int64
+	var lastSid string
+	var lastCmd string
+
 	log.Printf("start multicast reading....")
 	for mu.running {
 		b := make([]byte, MaxDatagramSize)
@@ -83,13 +86,28 @@ func (mu *Multicast) read() {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
 
-		nb := make([]byte, n)
-		copy(nb, b[:n])
+		timestamp = time.Now().Unix()
 
-		mchan <- MPack{
-			packet:    nb,
-			timestamp: time.Now().Unix(),
+		resp := Response{}
+		err = json.Unmarshal(b[:n], &resp)
+		if err != nil {
+			log.Printf("JSON Err: %+v - %+v", err, b[:n])
+			continue
 		}
+
+		if timestamp == lastTimestamp && resp.Cmd == lastCmd && resp.Sid == lastSid {
+			log.Printf("new: %+v - %s - %s", timestamp, resp.Cmd, resp.Sid)
+			log.Printf("old: %+v - %s - %s", lastTimestamp, lastCmd, lastSid)
+
+			continue
+		}
+
+		lastTimestamp = timestamp
+		lastCmd = resp.Cmd
+		lastSid = resp.Sid
+
+		mu.msgHandler(&resp)
+
 	}
 	mu.conn.Close()
 }
@@ -137,38 +155,6 @@ func (mu *Multicast) msgHandler(resp *Response) {
 		mu.unmarshallData(resp)
 	default:
 		log.Printf("DEFAULT: %+v", resp)
-	}
-}
-
-func (mu *Multicast) unarshallPacket() {
-
-	var lastTimestamp int64
-	var lastSid string
-	var lastCmd string
-
-	for mu.running {
-
-		b := <-mchan
-
-		resp := Response{}
-		err := json.Unmarshal(b.packet, &resp)
-		if err != nil {
-			log.Printf("JSON Err: %+v - %+v", err, b.packet)
-			continue
-		}
-
-		if b.timestamp == lastTimestamp && resp.Cmd == lastCmd && resp.Sid == lastSid {
-			log.Printf("new: %+v - %s - %s", b.timestamp, resp.Cmd, resp.Sid)
-			log.Printf("old: %+v - %s - %s", lastTimestamp, lastCmd, lastSid)
-
-			continue
-		}
-
-		lastTimestamp = b.timestamp
-		lastCmd = resp.Cmd
-		lastSid = resp.Sid
-
-		mu.msgHandler(&resp)
 	}
 }
 
