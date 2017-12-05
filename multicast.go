@@ -153,7 +153,7 @@ func (mu *Multicast) unarshallPacket() {
 		resp := Response{}
 		err := json.Unmarshal(b.packet, &resp)
 		if err != nil {
-			log.Printf("JSON Err: %+v", err)
+			log.Printf("JSON Err: %+v - %+v", err, b.packet)
 			continue
 		}
 
