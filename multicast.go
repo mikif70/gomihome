@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"time"
 )
 
 type Multicast struct {
@@ -60,6 +61,8 @@ func (mu *Multicast) dial() {
 
 func (mu *Multicast) read() {
 
+	var tstamp, last time.Time
+
 	log.Printf("start multicast reading....")
 	for mu.running {
 		b := make([]byte, MaxDatagramSize)
@@ -67,6 +70,9 @@ func (mu *Multicast) read() {
 		if err != nil {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
+
+		last = tstamp
+		tstamp = time.Now()
 
 		//		log.Printf("pkt: %+v", b)
 
@@ -76,6 +82,12 @@ func (mu *Multicast) read() {
 			log.Printf("JSON Err: %+v", err)
 			continue
 		}
+
+		if last == tstamp {
+			log.Printf("Duplicate: %+v", resp)
+			continue
+		}
+
 		mu.msgHandler(&resp)
 	}
 	mu.conn.Close()
