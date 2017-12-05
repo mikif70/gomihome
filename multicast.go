@@ -126,12 +126,16 @@ func (mu *Multicast) write(msg string, sid string) {
 	if err != nil {
 		log.Printf("Marshall error: %+v", err)
 	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), mu.waddr)
+	if DEBUG {
+		log.Printf("Msg: %+v - Addr: %+v", string(req), mu.waddr)
+	}
 	n, err = mu.conn.WriteTo([]byte(req), mu.waddr)
 	if err != nil {
 		log.Printf("Write error: %+v", err)
 	}
-	log.Printf("Wrote %d bytes", n)
+	if DEBUG {
+		log.Printf("Wrote %d bytes", n)
+	}
 }
 
 func (mu *Multicast) msgHandler(resp *Response) {
@@ -153,7 +157,9 @@ func (mu *Multicast) msgHandler(resp *Response) {
 		//		log.Printf("REPORT: %+v", resp)
 		mu.unmarshallData(resp)
 	default:
-		log.Printf("DEFAULT: %+v", resp)
+		if DEBUG {
+			log.Printf("DEFAULT: %+v", resp)
+		}
 	}
 }
 

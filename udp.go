@@ -74,7 +74,9 @@ func (gw *Udp) doReadDevs() {
 			gw.write("read", devices[d].Sid)
 		}
 		gw.write("read", gw.sid)
-		log.Printf("Read: %+v", t)
+		if DEBUG {
+			log.Printf("Read: %+v", t)
+		}
 	}
 }
 
@@ -82,7 +84,9 @@ func (gw *Udp) read() {
 
 	for gw.running {
 
-		log.Printf("Reading UDP: %+v", gw.addr)
+		if DEBUG {
+			log.Printf("Reading UDP: %+v", gw.addr)
+		}
 
 		//	conn.SetReadBuffer(maxDatagramSize)
 
@@ -92,7 +96,9 @@ func (gw *Udp) read() {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
 
-		log.Printf("Read from UDP: %d bytes", n)
+		if DEBUG {
+			log.Printf("Read from UDP: %d bytes", n)
+		}
 
 		resp := Response{}
 		err = json.Unmarshal(b[:n], &resp)
@@ -117,7 +123,9 @@ func (gw *Udp) msgHandler(resp *Response) {
 		}
 		numdevs = len(dt)
 		for i := range dt {
-			log.Printf("Data: %d - %s", i, dt[i])
+			if DEBUG {
+				log.Printf("Data: %d - %s", i, dt[i])
+			}
 			gw.write("read", dt[i])
 		}
 		gw.write("read", gw.sid)
@@ -139,7 +147,9 @@ func (gw *Udp) msgHandler(resp *Response) {
 	case "heartbeat":
 		gw.unmarshallData(resp)
 	default:
-		log.Printf("DEFAULT: %+v", resp)
+		if DEBUG {
+			log.Printf("DEFAULT: %+v", resp)
+		}
 	}
 }
 
@@ -204,6 +214,9 @@ func (gw *Udp) write(msg string, sid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("Msg: %+v - Addr: %+v", string(req), gw.conn)
+	if DEBUG {
+		log.Printf("Msg: %+v - Addr: %+v", string(req), gw.conn)
+	}
+
 	gw.conn.Write([]byte(req))
 }
