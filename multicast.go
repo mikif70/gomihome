@@ -9,8 +9,15 @@ import (
 )
 
 var (
-	tstamp, last time.Time
+	mchan MChan
 )
+
+type MPack struct {
+	packet    []byte
+	timestamp time.Time
+}
+
+type MChan chan MPack
 
 type Multicast struct {
 	running  bool
@@ -73,24 +80,13 @@ func (mu *Multicast) read() {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
 
-		last = tstamp
-		tstamp = time.Now()
+		nb := make([]byte, n)
+		copy(b[:n], nb)
 
-		//		log.Printf("pkt: %+v", b)
-
-		resp := Response{}
-		err = json.Unmarshal(b[:n], &resp)
-		if err != nil {
-			log.Printf("JSON Err: %+v", err)
-			continue
+		mchan <- MPack{
+			packet:    nb,
+			timestamp: time.Now(),
 		}
-
-		if last == tstamp {
-			log.Printf("Duplicate: %+v", resp)
-			continue
-		}
-
-		mu.msgHandler(&resp)
 	}
 	mu.conn.Close()
 }
@@ -141,7 +137,36 @@ func (mu *Multicast) msgHandler(resp *Response) {
 	}
 }
 
-func (gw *Multicast) unmarshallData(resp *Response) {
+func (mu *Multicast) unarshallPacket() {
+
+	var lastTimestamp time.Time
+	var lastSid string
+	var lastCmd string
+
+	for mu.running {
+
+		b := <-mchan
+
+		resp := Response{}
+		err := json.Unmarshal(b.packet, &resp)
+		if err != nil {
+			log.Printf("JSON Err: %+v", err)
+			continue
+		}
+
+		if b.timestamp.Equal(lastTimestamp) && resp.Cmd == lastCmd && resp.Sid == lastSid {
+			continue
+		}
+
+		lastTimestamp = b.timestamp
+		lastCmd = resp.Cmd
+		lastSid = resp.Sid
+
+		mu.msgHandler(&resp)
+	}
+}
+
+func (mu *Multicast) unmarshallData(resp *Response) {
 	switch resp.Model {
 	case "motion":
 		dt := MotionData{}
