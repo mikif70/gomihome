@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+var (
+	tstamp, last time.Time
+)
+
 type Multicast struct {
 	running  bool
 	discover bool
@@ -60,8 +64,6 @@ func (mu *Multicast) dial() {
 }
 
 func (mu *Multicast) read() {
-
-	var tstamp, last time.Time
 
 	log.Printf("start multicast reading....")
 	for mu.running {
