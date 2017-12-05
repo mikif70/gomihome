@@ -14,7 +14,7 @@ var (
 
 type MPack struct {
 	packet    []byte
-	timestamp time.Time
+	timestamp int64
 }
 
 type MChan chan MPack
@@ -88,7 +88,7 @@ func (mu *Multicast) read() {
 
 		mchan <- MPack{
 			packet:    nb,
-			timestamp: time.Now(),
+			timestamp: time.Now().Unix(),
 		}
 	}
 	mu.conn.Close()
@@ -142,7 +142,7 @@ func (mu *Multicast) msgHandler(resp *Response) {
 
 func (mu *Multicast) unarshallPacket() {
 
-	var lastTimestamp time.Time
+	var lastTimestamp int64
 	var lastSid string
 	var lastCmd string
 
@@ -160,7 +160,7 @@ func (mu *Multicast) unarshallPacket() {
 		log.Printf("new: %+v - %s %s", b.timestamp, resp.Cmd, resp.Sid)
 		log.Printf("old: %+v - %s %s", lastTimestamp, lastCmd, lastSid)
 
-		if b.timestamp.Equal(lastTimestamp) && resp.Cmd == lastCmd && resp.Sid == lastSid {
+		if b.timestamp == lastTimestamp && resp.Cmd == lastCmd && resp.Sid == lastSid {
 			continue
 		}
 
