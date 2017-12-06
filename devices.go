@@ -4,6 +4,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -24,8 +25,8 @@ type InfluxDevice struct {
 	Rgb          int
 	NoMotion     int
 	NoClose      int
-	Temperature  string
-	Humidity     string
+	Temperature  int
+	Humidity     int
 	Timestamp    time.Time
 }
 
@@ -97,8 +98,8 @@ func unmarshallData(resp *Response) {
 		}
 		log.Printf("Sensor_HT (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
-		indevs.Temperature = dt.Temperature
-		indevs.Humidity = dt.Humidity
+		indevs.Temperature, _ = strconv.Atoi(dt.Temperature)
+		indevs.Humidity, _ = strconv.Atoi(dt.Humidity)
 	case "switch":
 		dt := SwitchData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -123,7 +124,7 @@ func unmarshallData(resp *Response) {
 		log.Printf("Model not defined: %s", resp.Model)
 	}
 
-	if (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
+	if (resp.Cmd == "report" && resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
 		writeStats(indevs)
 	}
 }
