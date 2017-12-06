@@ -17,6 +17,7 @@ type Device struct {
 type DataIdList []string
 
 type InfluxDevice struct {
+	Cmd          string
 	Model        string
 	Sid          string
 	Voltage      int
@@ -64,6 +65,7 @@ type Sensor_htData struct {
 
 func unmarshallData(resp *Response) {
 	indevs := &InfluxDevice{
+		Cmd:       resp.Cmd,
 		Model:     resp.Model,
 		Sid:       resp.Sid,
 		Timestamp: time.Now(),
@@ -147,7 +149,7 @@ func unmarshallData(resp *Response) {
 		log.Printf("Model not defined: %s", resp.Model)
 	}
 
-	if (resp.Cmd == "report" && resp.Model != "sensor_ht") || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
+	if resp.Cmd == "report" || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
 		writeStats(indevs)
 	}
 }

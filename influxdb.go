@@ -38,7 +38,7 @@ func writeStats(id *InfluxDevice) {
 		return
 	}
 
-	tags := map[string]string{"sid": id.Sid, "model": id.Model}
+	tags := map[string]string{"sid": id.Sid, "model": id.Model, "cmd": id.Cmd}
 	fields := map[string]interface{}{
 		"voltage":      id.Voltage,
 		"status":       id.Status,
