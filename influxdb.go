@@ -66,7 +66,10 @@ func writeStats(id *InfluxDevice) {
 			"humidity":    id.Humidity,
 		}
 	case "switch":
-		fields = map[string]interface{}{}
+		fields = map[string]interface{}{
+			"voltage": id.Voltage,
+			"status":  id.Status,
+		}
 	case "gateway":
 		fields = map[string]interface{}{
 			"illumination": id.Illumination,
