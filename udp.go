@@ -209,6 +209,9 @@ func (gw *Udp) unmarshallData(resp *Response) {
 	if resp.Cmd == "read_ack" {
 		indevs.Timestamp = time.Now()
 		writeStats(indevs)
+		if DEBUG {
+			log.Printf("Devs: %+v", indevs)
+		}
 	}
 }
 
