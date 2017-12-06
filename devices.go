@@ -20,8 +20,8 @@ type InfluxDevice struct {
 	Status       string
 	Illumination int
 	Rgb          int
-	NoMotion     string
-	NoClose      string
+	NoMotion     int
+	NoClose      int
 	Temperature  int
 	Humidity     int
 	Timestamp    time.Time
@@ -36,7 +36,7 @@ type GatewayData struct {
 type MotionData struct {
 	Voltage  int    `json:"voltage,omitempty"`
 	Status   string `json:"status,omitempty"`
-	NoMotion string `json:"no_motion,omitempty"`
+	NoMotion int    `json:"no_motion,omitempty"`
 }
 
 type MagnetData struct {
@@ -51,7 +51,7 @@ type SwitchData struct {
 }
 
 type Sensor_htData struct {
-	Voltage     int    `json:"voltage,omitempty"`
-	Temperature string `json:"temperature,omitempty"`
-	Humidity    string `json:"humidity,omitempty"`
+	Voltage     int `json:"voltage,omitempty"`
+	Temperature int `json:"temperature,omitempty"`
+	Humidity    int `json:"humidity,omitempty"`
 }

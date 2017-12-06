@@ -154,7 +154,10 @@ func (gw *Udp) msgHandler(resp *Response) {
 }
 
 func (gw *Udp) unmarshallData(resp *Response) {
-	indevs := &InfluxDevice{}
+	indevs := &InfluxDevice{
+		Model: resp.Model,
+		Sid:   resp.Sid,
+	}
 
 	switch resp.Model {
 	case "motion":
@@ -168,8 +171,6 @@ func (gw *Udp) unmarshallData(resp *Response) {
 		indevs.Voltage = dt.Voltage
 		indevs.Status = dt.Status
 		indevs.NoMotion = dt.NoMotion
-		indevs.Model = resp.Model
-		indevs.Sid = resp.Sid
 	case "magnet":
 		dt := MagnetData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -178,6 +179,9 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			return
 		}
 		log.Printf("Magnet (%s): %+v", resp.Cmd, dt)
+		indevs.Voltage = dt.Voltage
+		indevs.Status = dt.Status
+		indevs.NoClose = dt.NoClose
 	case "sensor_ht":
 		dt := Sensor_htData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -186,6 +190,9 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			return
 		}
 		log.Printf("Sensor_HT (%s): %+v", resp.Cmd, dt)
+		indevs.Voltage = dt.Voltage
+		indevs.Temperature = dt.Temperature
+		indevs.Humidity = dt.Humidity
 	case "switch":
 		dt := SwitchData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -194,6 +201,8 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			return
 		}
 		log.Printf("Switch (%s): %+v", resp.Cmd, dt)
+		indevs.Voltage = dt.Voltage
+		indevs.Status = dt.Status
 	case "gateway":
 		dt := GatewayData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -202,6 +211,8 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			return
 		}
 		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
+		indevs.Illumination = dt.Illumination
+		indevs.Rgb = dt.Rgb
 	default:
 		log.Printf("Model not defined: %s", resp.Model)
 	}
