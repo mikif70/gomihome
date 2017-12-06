@@ -152,60 +152,13 @@ func (mu *Multicast) msgHandler(resp *Response) {
 		}
 	case "heartbeat":
 		//		log.Printf("Heartbeat: %s - %s", resp.Model, resp.Sid)
-		mu.unmarshallData(resp)
+		unmarshallData(resp)
 	case "report":
 		//		log.Printf("REPORT: %+v", resp)
-		mu.unmarshallData(resp)
+		unmarshallData(resp)
 	default:
 		if DEBUG {
 			log.Printf("DEFAULT: %+v", resp)
 		}
-	}
-}
-
-func (mu *Multicast) unmarshallData(resp *Response) {
-	switch resp.Model {
-	case "motion":
-		dt := MotionData{}
-		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
-		if err != nil {
-			log.Printf("JSON Data Err: %+v", err)
-			return
-		}
-		log.Printf("Motion (%s): %+v", resp.Cmd, dt)
-	case "magnet":
-		dt := MagnetData{}
-		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
-		if err != nil {
-			log.Printf("JSON Data Err: %+v", err)
-			return
-		}
-		log.Printf("Magnet (%s): %+v", resp.Cmd, dt)
-	case "sensor_ht":
-		dt := Sensor_htData{}
-		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
-		if err != nil {
-			log.Printf("JSON Data Err: %+v", err)
-			return
-		}
-		log.Printf("Sensor_HT (%s): %+v", resp.Cmd, dt)
-	case "switch":
-		dt := SwitchData{}
-		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
-		if err != nil {
-			log.Printf("JSON Data Err: %+v", err)
-			return
-		}
-		log.Printf("Switch (%s): %+v", resp.Cmd, dt)
-	case "gateway":
-		dt := GatewayData{}
-		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
-		if err != nil {
-			log.Printf("JSON Data Err: %+v", err)
-			return
-		}
-		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
-	default:
-		log.Printf("Model not defined: %s", resp.Model)
 	}
 }
