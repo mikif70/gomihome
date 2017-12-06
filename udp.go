@@ -155,8 +155,9 @@ func (gw *Udp) msgHandler(resp *Response) {
 
 func (gw *Udp) unmarshallData(resp *Response) {
 	indevs := &InfluxDevice{
-		Model: resp.Model,
-		Sid:   resp.Sid,
+		Model:     resp.Model,
+		Sid:       resp.Sid,
+		Timestamp: time.Now(),
 	}
 
 	switch resp.Model {
@@ -218,11 +219,7 @@ func (gw *Udp) unmarshallData(resp *Response) {
 	}
 
 	if resp.Cmd == "read_ack" {
-		indevs.Timestamp = time.Now()
 		writeStats(indevs)
-		if DEBUG {
-			log.Printf("Devs: %+v", indevs)
-		}
 	}
 }
 

@@ -16,6 +16,7 @@ const (
 func writeStats(id *InfluxDevice) {
 	if DEBUG {
 		log.Printf("writing to influxdb server: %s", Infdb)
+		log.Printf("Devs: %+v", id)
 	}
 
 	c, err := influxdb.NewHTTPClient(influxdb.HTTPConfig{
@@ -57,5 +58,7 @@ func writeStats(id *InfluxDevice) {
 	bp.AddPoint(pt)
 
 	// Write the batch
-	c.Write(bp)
+	if err := c.Write(bp); err != nil {
+		log.Printf("Influxdb write: ", err)
+	}
 }
