@@ -48,6 +48,9 @@ func writeStats(id *InfluxDevice) {
 		"noclose":      id.NoClose,
 		"temperature":  id.Temperature,
 		"humidity":     id.Humidity,
+		"open":         id.Open,
+		"close":        id.Close,
+		"motion":       id.Motion,
 	}
 	pt, err := influxdb.NewPoint("gateway", tags, fields, id.Timestamp)
 	if err != nil {
