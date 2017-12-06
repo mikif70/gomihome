@@ -23,7 +23,10 @@ type InfluxDevice struct {
 	Status       string
 	Illumination int
 	Rgb          int
+	Motion       bool
 	NoMotion     int
+	Open         bool
+	Close        bool
 	NoClose      int
 	Temperature  int
 	Humidity     int
@@ -39,13 +42,13 @@ type GatewayData struct {
 type MotionData struct {
 	Voltage  int    `json:"voltage,omitempty"`
 	Status   string `json:"status,omitempty"`
-	NoMotion int    `json:"no_motion,omitempty"`
+	NoMotion string `json:"no_motion,omitempty"`
 }
 
 type MagnetData struct {
 	Voltage int    `json:"voltage,omitempty"`
 	Status  string `json:"status,omitempty"`
-	NoClose int    `json:"no_close,omitempty"`
+	NoClose string `json:"no_close,omitempty"`
 }
 
 type SwitchData struct {
@@ -77,7 +80,14 @@ func unmarshallData(resp *Response) {
 		log.Printf("Motion (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
 		indevs.Status = dt.Status
-		indevs.NoMotion = dt.NoMotion
+		switch dt.Status {
+		case "motion":
+			indevs.Motion = true
+			indevs.NoMotion = 0
+		case "no_motion":
+			indevs.Motion = false
+			indevs.NoMotion, _ = strconv.Atoi(dt.NoMotion)
+		}
 	case "magnet":
 		dt := MagnetData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -88,7 +98,20 @@ func unmarshallData(resp *Response) {
 		log.Printf("Magnet (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
 		indevs.Status = dt.Status
-		indevs.NoClose = dt.NoClose
+		switch dt.Status {
+		case "open":
+			indevs.Close = false
+			indevs.Open = true
+			indevs.NoClose = 0
+		case "close":
+			indevs.Close = true
+			indevs.Open = false
+			indevs.NoClose = 0
+		case "no_close":
+			indevs.NoClose, _ = strconv.Atoi(dt.NoClose)
+			indevs.Close = false
+			indevs.Open = true
+		}
 	case "sensor_ht":
 		dt := Sensor_htData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
