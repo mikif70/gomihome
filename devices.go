@@ -123,7 +123,7 @@ func unmarshallData(resp *Response) {
 		log.Printf("Model not defined: %s", resp.Model)
 	}
 
-	if resp.Cmd == "heartbeat" || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
+	if (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
 		writeStats(indevs)
 	}
 }
