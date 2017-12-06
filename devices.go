@@ -22,8 +22,8 @@ type InfluxDevice struct {
 	Rgb          int
 	NoMotion     int
 	NoClose      int
-	Temperature  int
-	Humidity     int
+	Temperature  string
+	Humidity     string
 	Timestamp    time.Time
 }
 
@@ -51,7 +51,7 @@ type SwitchData struct {
 }
 
 type Sensor_htData struct {
-	Voltage     int `json:"voltage,omitempty"`
-	Temperature int `json:"temperature,omitempty"`
-	Humidity    int `json:"humidity,omitempty"`
+	Voltage     int    `json:"voltage,omitempty"`
+	Temperature string `json:"temperature,omitempty"`
+	Humidity    string `json:"humidity,omitempty"`
 }
