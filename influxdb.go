@@ -39,20 +39,42 @@ func writeStats(id *InfluxDevice) {
 	}
 
 	tags := map[string]string{"sid": id.Sid, "model": id.Model, "cmd": id.Cmd}
-	fields := map[string]interface{}{
-		"voltage":      id.Voltage,
-		"status":       id.Status,
-		"illumination": id.Illumination,
-		"rgb":          id.Rgb,
-		"nomotion":     id.NoMotion,
-		"noclose":      id.NoClose,
-		"temperature":  id.Temperature,
-		"humidity":     id.Humidity,
-		"open":         id.Open,
-		"close":        id.Close,
-		"motion":       id.Motion,
+
+	var fields map[string]interface{}
+
+	switch id.Model {
+	case "motion":
+		fields = map[string]interface{}{
+			"voltage":  id.Voltage,
+			"status":   id.Status,
+			"nomotion": id.NoMotion,
+			"motion":   id.Motion,
+		}
+	case "magnet":
+		fields = map[string]interface{}{
+			"voltage": id.Voltage,
+			"status":  id.Status,
+			"noclose": id.NoClose,
+			"open":    id.Open,
+			"close":   id.Close,
+		}
+	case "sensor_ht":
+		fields = map[string]interface{}{
+			"voltage":     id.Voltage,
+			"status":      id.Status,
+			"temperature": id.Temperature,
+			"humidity":    id.Humidity,
+		}
+	case "switch":
+		fields = map[string]interface{}{}
+	case "gateway":
+		fields = map[string]interface{}{
+			"illumination": id.Illumination,
+			"rgb":          id.Rgb,
+			"protoversion": id.ProtoVersion,
+		}
 	}
-	pt, err := influxdb.NewPoint("gateway", tags, fields, id.Timestamp)
+	pt, err := influxdb.NewPoint(id.Model, tags, fields, id.Timestamp)
 	if err != nil {
 		log.Printf("Error: %+v\n", err)
 		return

@@ -24,6 +24,7 @@ type InfluxDevice struct {
 	Status       string
 	Illumination int
 	Rgb          int
+	ProtoVersion string
 	Motion       bool
 	NoMotion     int
 	Open         bool
@@ -145,6 +146,7 @@ func unmarshallData(resp *Response) {
 		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
 		indevs.Illumination = dt.Illumination
 		indevs.Rgb = dt.Rgb
+		indevs.ProtoVersion = dt.ProtoVersion
 	default:
 		log.Printf("Model not defined: %s", resp.Model)
 	}
