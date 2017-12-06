@@ -1,6 +1,10 @@
 // devices
 package main
 
+import (
+	"time"
+)
+
 type Device struct {
 	Name  string `json:"name"`
 	Model string `json:"model"`
@@ -8,6 +12,20 @@ type Device struct {
 }
 
 type DataIdList []string
+
+type InfluxDevice struct {
+	Model        string
+	Sid          string
+	Voltage      int
+	Status       string
+	Illumination int
+	Rgb          int
+	NoMotion     string
+	NoClose      string
+	Temperature  int
+	Humidity     int
+	Timestamp    time.Time
+}
 
 type GatewayData struct {
 	Rgb          int    `json:"rgb,omitempty"`

@@ -73,7 +73,7 @@ func (gw *Udp) doReadDevs() {
 		for d := range devices {
 			gw.write("read", devices[d].Sid)
 		}
-		gw.write("read", gw.sid)
+		//		gw.write("read", gw.sid)
 		if DEBUG {
 			log.Printf("Read: %+v", t)
 		}
@@ -154,6 +154,8 @@ func (gw *Udp) msgHandler(resp *Response) {
 }
 
 func (gw *Udp) unmarshallData(resp *Response) {
+	indevs := &InfluxDevice{}
+
 	switch resp.Model {
 	case "motion":
 		dt := MotionData{}
@@ -163,6 +165,11 @@ func (gw *Udp) unmarshallData(resp *Response) {
 			return
 		}
 		log.Printf("Motion (%s): %+v", resp.Cmd, dt)
+		indevs.Voltage = dt.Voltage
+		indevs.Status = dt.Status
+		indevs.NoMotion = dt.NoMotion
+		indevs.Model = resp.Model
+		indevs.Sid = resp.Sid
 	case "magnet":
 		dt := MagnetData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
@@ -197,6 +204,11 @@ func (gw *Udp) unmarshallData(resp *Response) {
 		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
 	default:
 		log.Printf("Model not defined: %s", resp.Model)
+	}
+
+	if resp.Cmd == "read_ack" {
+		indevs.Timestamp = time.Now()
+		writeStats(indevs)
 	}
 }
 
