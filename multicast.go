@@ -8,17 +8,6 @@ import (
 	"time"
 )
 
-var (
-	mchan MChan
-)
-
-type MPack struct {
-	packet    []byte
-	timestamp int64
-}
-
-type MChan chan MPack
-
 type Multicast struct {
 	running  bool
 	discover bool
@@ -30,8 +19,6 @@ type Multicast struct {
 
 func newMulticast() *Multicast {
 	multicast := &Multicast{}
-
-	mchan = make(chan MPack)
 
 	return multicast
 }
@@ -126,14 +113,14 @@ func (mu *Multicast) write(msg string, sid string) {
 	if err != nil {
 		log.Printf("Marshall error: %+v", err)
 	}
-	if DEBUG {
+	if opts.Debug {
 		log.Printf("Msg: %+v - Addr: %+v", string(req), mu.waddr)
 	}
 	n, err = mu.conn.WriteTo([]byte(req), mu.waddr)
 	if err != nil {
 		log.Printf("Write error: %+v", err)
 	}
-	if DEBUG {
+	if opts.Debug {
 		log.Printf("Wrote %d bytes", n)
 	}
 }
@@ -157,7 +144,7 @@ func (mu *Multicast) msgHandler(resp *Response) {
 		//		log.Printf("REPORT: %+v", resp)
 		unmarshallData(resp)
 	default:
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("DEFAULT: %+v", resp)
 		}
 	}

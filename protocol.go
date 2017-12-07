@@ -6,8 +6,6 @@ const (
 	MulticastWPort  = "4321"
 	MulticastRPort  = "9898"
 	MaxDatagramSize = 1024
-	DEBUG           = true
-	INFO            = true
 )
 
 type Response struct {

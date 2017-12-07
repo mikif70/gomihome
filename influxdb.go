@@ -9,18 +9,14 @@ import (
 	influxdb "github.com/influxdata/influxdb/client/v2"
 )
 
-const (
-	Infdb = "192.168.1.10:8086"
-)
-
 func writeStats(id *InfluxDevice) {
-	if INFO || DEBUG {
-		log.Printf("writing to influxdb server: %s", Infdb)
+	if opts.Verbose || opts.Debug {
+		log.Printf("writing to influxdb server: %s", opts.Influxdb)
 		log.Printf("Devs: %+v", id)
 	}
 
 	c, err := influxdb.NewHTTPClient(influxdb.HTTPConfig{
-		Addr:    fmt.Sprintf("http://%s", Infdb),
+		Addr:    fmt.Sprintf("http://%s", opts.Influxdb),
 		Timeout: 2 * time.Second,
 	})
 	if err != nil {

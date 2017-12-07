@@ -1,49 +1,17 @@
-// newmain.go
-/*
-	Gateway:
-		rgb:
-			<int>
-		illumination:
-			<int>
-
-
-	Switch:
-		voltage:
-			<int>
-		status:
-			"click"
-			"double_click"
-			"long_click_press"
-			"long_click_release"
-
-	Motion:
-		voltage:
-			<int>
-		status:
-			"motion"
-		no_motion:
-			<sec>
-
-	Sensor_ht:
-		voltage:
-			<int>
-		temperature:
-			<int>
-		humidity:
-			<int>
-
-*/
-
+// main.go
 package main
 
 import (
-	//	"encoding/json"
+	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
-	//	"strings"
 	"sync"
-	//	"time"
+)
+
+const (
+	_Version = "v1.0.0"
 )
 
 var (
@@ -51,13 +19,26 @@ var (
 )
 
 func main() {
-	f, err := os.OpenFile("xiaomi.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	flag.Usage = usage
+	flag.Parse()
+
+	if opts.Version {
+		fmt.Printf("%s: %s\n", os.Args[0], _Version)
+		os.Exit(0)
+	}
+
+	f, err := os.OpenFile(opts.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
 	mw := io.MultiWriter(os.Stdout, f)
 	log.SetOutput(mw)
+
+	if opts.Debug {
+		log.Printf("Opts: %+v", opts)
+	}
 
 	udp := newUdp()
 	multicast := newMulticast()

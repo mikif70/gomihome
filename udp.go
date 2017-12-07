@@ -6,11 +6,6 @@ import (
 	"log"
 	"net"
 	"time"
-	//	"strings"
-)
-
-const (
-	timeToTick = 10 * time.Minute
 )
 
 type Udp struct {
@@ -22,11 +17,9 @@ type Udp struct {
 	addr    *net.UDPAddr
 }
 
-type Devices []Device
-
 var (
 	devices = make([]Device, 0)
-	ticker  = time.NewTicker(timeToTick)
+	ticker  = time.NewTicker(opts.TimeToTick)
 	numdevs = 0
 )
 
@@ -42,7 +35,6 @@ func (gw *Udp) DiscoverDevs() {
 	gw.dial()
 	go gw.read()
 	gw.write("get_id_list", "")
-
 }
 
 func (gw *Udp) resolveAddr(ip string, port string) {
@@ -69,7 +61,7 @@ func (gw *Udp) dial() {
 
 func (gw *Udp) doReadDevs() {
 	for t := range ticker.C {
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("devs: %+v", devices)
 		}
 		for d := range devices {
@@ -78,7 +70,7 @@ func (gw *Udp) doReadDevs() {
 			}
 		}
 		//		gw.write("read", gw.sid)
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("Read: %+v", t)
 		}
 	}
@@ -88,7 +80,7 @@ func (gw *Udp) read() {
 
 	for gw.running {
 
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("Reading UDP: %+v", gw.addr)
 		}
 
@@ -100,7 +92,7 @@ func (gw *Udp) read() {
 			log.Fatal("ReadFromUDP failed:", err)
 		}
 
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("Read from UDP: %d bytes", n)
 		}
 
@@ -113,6 +105,7 @@ func (gw *Udp) read() {
 		gw.msgHandler(&resp)
 	}
 	gw.conn.Close()
+	wg.Done()
 }
 
 func (gw *Udp) msgHandler(resp *Response) {
@@ -127,7 +120,7 @@ func (gw *Udp) msgHandler(resp *Response) {
 		}
 		numdevs = len(dt)
 		for i := range dt {
-			if DEBUG {
+			if opts.Debug {
 				log.Printf("Data: %d - %s", i, dt[i])
 			}
 			gw.write("read", dt[i])
@@ -151,7 +144,7 @@ func (gw *Udp) msgHandler(resp *Response) {
 	case "heartbeat":
 		unmarshallData(resp)
 	default:
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("DEFAULT: %+v", resp)
 		}
 	}
@@ -171,7 +164,7 @@ func (gw *Udp) write(msg string, sid string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if DEBUG {
+	if opts.Debug {
 		log.Printf("Msg: %+v - Addr: %+v", string(req), gw.conn)
 	}
 

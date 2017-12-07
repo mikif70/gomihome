@@ -8,6 +8,41 @@ import (
 	"time"
 )
 
+/*
+	Gateway:
+		rgb:
+			<int>
+		illumination:
+			<int>
+
+
+	Switch:
+		voltage:
+			<int>
+		status:
+			"click"
+			"double_click"
+			"long_click_press"
+			"long_click_release"
+
+	Motion:
+		voltage:
+			<int>
+		status:
+			"motion"
+		no_motion:
+			<sec>
+
+	Sensor_ht:
+		voltage:
+			<int>
+		temperature:
+			<int>
+		humidity:
+			<int>
+
+*/
+
 type Device struct {
 	Name  string `json:"name"`
 	Model string `json:"model"`
@@ -150,10 +185,10 @@ func unmarshallData(resp *Response) {
 
 	if (resp.Cmd == "report" && resp.Model != "sensor_ht") || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
 		writeStats(indevs)
-		if INFO || DEBUG {
+		if opts.Verbose || opts.Debug {
 			log.Printf("%s Data: %+v", resp.Model, resp.Data)
 		}
-		if DEBUG {
+		if opts.Debug {
 			log.Printf("%s InfluxData: %+v", resp.Model, indevs)
 		}
 	}
