@@ -14,7 +14,7 @@ const (
 )
 
 func writeStats(id *InfluxDevice) {
-	if DEBUG {
+	if INFO || DEBUG {
 		log.Printf("writing to influxdb server: %s", Infdb)
 		log.Printf("Devs: %+v", id)
 	}

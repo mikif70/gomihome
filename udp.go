@@ -69,7 +69,9 @@ func (gw *Udp) dial() {
 
 func (gw *Udp) doReadDevs() {
 	for t := range ticker.C {
-		log.Printf("devs: %+v", devices)
+		if DEBUG {
+			log.Printf("devs: %+v", devices)
+		}
 		for d := range devices {
 			gw.write("read", devices[d].Sid)
 		}

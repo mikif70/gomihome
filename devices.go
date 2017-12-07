@@ -80,7 +80,6 @@ func unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Motion (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
 		indevs.Status = dt.Status
 		switch dt.Status {
@@ -98,7 +97,6 @@ func unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Magnet (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
 		indevs.Status = dt.Status
 		switch dt.Status {
@@ -122,7 +120,6 @@ func unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Sensor_HT (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
 		indevs.Temperature, _ = strconv.Atoi(dt.Temperature)
 		indevs.Humidity, _ = strconv.Atoi(dt.Humidity)
@@ -133,7 +130,6 @@ func unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Switch (%s): %+v", resp.Cmd, dt)
 		indevs.Voltage = dt.Voltage
 		indevs.Status = dt.Status
 	case "gateway":
@@ -143,12 +139,19 @@ func unmarshallData(resp *Response) {
 			log.Printf("JSON Data Err: %+v", err)
 			return
 		}
-		log.Printf("Gateway (%s): %+v", resp.Cmd, dt)
 		indevs.Illumination = dt.Illumination
 		indevs.Rgb = dt.Rgb
 		indevs.ProtoVersion = dt.ProtoVersion
 	default:
 		log.Printf("Model not defined: %s", resp.Model)
+	}
+
+	log.Printf("%s: %s", resp.Model, resp.Cmd)
+	if INFO || DEBUG {
+		log.Printf("%s Data: %+v", resp.Model, resp.Data)
+	}
+	if DEBUG {
+		log.Printf("%s InfluxData: %+v", resp.Model, indevs)
 	}
 
 	if resp.Cmd == "report" || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
