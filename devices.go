@@ -148,7 +148,7 @@ func unmarshallData(resp *Response) {
 
 	log.Printf("%s: %s", resp.Model, resp.Cmd)
 
-	if resp.Cmd == "report" || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
+	if (resp.Cmd == "report" && resp.Model != "sensor_ht") || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
 		writeStats(indevs)
 		if INFO || DEBUG {
 			log.Printf("%s Data: %+v", resp.Model, resp.Data)
