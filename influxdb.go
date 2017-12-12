@@ -54,12 +54,20 @@ func writeStats(id *InfluxDevice) {
 			"open":    id.Open,
 			"close":   id.Close,
 		}
-	case "sensor_ht", "weather.v1":
+	case "sensor_ht":
 		fields = map[string]interface{}{
 			"voltage":     id.Voltage,
 			"status":      id.Status,
 			"temperature": id.Temperature,
 			"humidity":    id.Humidity,
+		}
+	case "weather.v1":
+		fields = map[string]interface{}{
+			"voltage":     id.Voltage,
+			"status":      id.Status,
+			"temperature": id.Temperature,
+			"humidity":    id.Humidity,
+			"pressure":    id.Pressure,
 		}
 	case "switch":
 		fields = map[string]interface{}{

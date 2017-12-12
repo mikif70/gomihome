@@ -67,6 +67,7 @@ type InfluxDevice struct {
 	NoClose      int
 	Temperature  int
 	Humidity     int
+	Pressure     int
 	Timestamp    time.Time
 }
 
@@ -97,6 +98,13 @@ type Sensor_htData struct {
 	Voltage     int    `json:"voltage,omitempty"`
 	Temperature string `json:"temperature,omitempty"`
 	Humidity    string `json:"humidity,omitempty"`
+}
+
+type WeatherV1Data struct {
+	Voltage     int    `json:"voltage,omitempty"`
+	Temperature string `json:"temperature,omitempty"`
+	Humidity    string `json:"humidity,omitempty"`
+	Pressure    string `json:"pressure,omitempty"`
 }
 
 func unmarshallData(resp *Response) {
@@ -148,7 +156,7 @@ func unmarshallData(resp *Response) {
 			indevs.Close = false
 			indevs.Open = true
 		}
-	case "sensor_ht", "weather.v1":
+	case "sensor_ht":
 		dt := Sensor_htData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
 		if err != nil {
@@ -158,6 +166,17 @@ func unmarshallData(resp *Response) {
 		indevs.Voltage = dt.Voltage
 		indevs.Temperature, _ = strconv.Atoi(dt.Temperature)
 		indevs.Humidity, _ = strconv.Atoi(dt.Humidity)
+	case "weather.v1":
+		dt := WeatherV1Data{}
+		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
+		if err != nil {
+			log.Printf("JSON Data Err: %+v", err)
+			return
+		}
+		indevs.Voltage = dt.Voltage
+		indevs.Temperature, _ = strconv.Atoi(dt.Temperature)
+		indevs.Humidity, _ = strconv.Atoi(dt.Humidity)
+		indevs.Pressure, _ = strconv.Atoi(dt.Pressure)
 	case "switch":
 		dt := SwitchData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
