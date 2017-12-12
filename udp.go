@@ -65,7 +65,7 @@ func (gw *Udp) doReadDevs() {
 			log.Printf("devs: %+v", devices)
 		}
 		for d := range devices {
-			if devices[d].Model == "sensor_ht" || devices[d].Model == "gateway" {
+			if devices[d].Model == "sensor_ht" || devices[d].Model == "gateway" || devices[d].Model == "weather.v1" {
 				gw.write("read", devices[d].Sid)
 			}
 		}

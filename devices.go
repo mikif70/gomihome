@@ -148,7 +148,7 @@ func unmarshallData(resp *Response) {
 			indevs.Close = false
 			indevs.Open = true
 		}
-	case "sensor_ht":
+	case "sensor_ht", "weather.v1":
 		dt := Sensor_htData{}
 		err := json.Unmarshal([]byte(resp.Data.(string)), &dt)
 		if err != nil {
@@ -183,7 +183,7 @@ func unmarshallData(resp *Response) {
 
 	log.Printf("%s: %s", resp.Model, resp.Cmd)
 
-	if (resp.Cmd == "report" && resp.Model != "sensor_ht") || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway")) {
+	if (resp.Cmd == "report" && (resp.Model != "sensor_ht" || resp.Model != "weather.v1")) || (resp.Cmd == "heartbeat" && resp.Model != "gateway") || (resp.Cmd == "read_ack" && (resp.Model == "sensor_ht" || resp.Model == "gateway" || resp.Model == "weather.v1")) {
 		writeStats(indevs)
 		if opts.Verbose || opts.Debug {
 			log.Printf("%s Data: %+v", resp.Model, resp.Data)
