@@ -210,5 +210,7 @@ func unmarshallData(resp *Response) {
 		if opts.Debug {
 			log.Printf("%s InfluxData: %+v", resp.Model, indevs)
 		}
+	} else if opts.Debug || opts.Verbose {
+		log.Printf("%s: %+v", resp.Model, resp.Data)
 	}
 }
