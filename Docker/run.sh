@@ -6,7 +6,7 @@ docker run \
         --name gomihome \
         --log-opt max-size=2m \
         --log-opt max-file=5 \
-        mikif70/gomihome:1.1.3 \
+        mikif70/gomihome:1.1.4 \
                 -i 172.17.0.1:8086 \
                 -D \
 				-l /data/gomihome.log \
